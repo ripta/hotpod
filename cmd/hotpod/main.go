@@ -35,6 +35,12 @@ func main() {
 	memoryHandlers := handlers.NewMemoryHandlers(tracker, cfg)
 	memoryHandlers.Register(srv.Mux())
 
+	ioHandlers := handlers.NewIOHandlers(tracker, cfg)
+	ioHandlers.Register(srv.Mux())
+
+	workHandlers := handlers.NewWorkHandlers(tracker, cfg)
+	workHandlers.Register(srv.Mux())
+
 	slog.Info("hotpod starting",
 		"port", cfg.Port,
 		"log_level", cfg.LogLevel,

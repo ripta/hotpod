@@ -1,13 +1,18 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 )
+
+// IOBasePath is the fixed base directory for I/O operations.
+const IOBasePath = "/tmp"
 
 // Config holds all configuration for the hotpod server.
 type Config struct {
@@ -33,6 +38,11 @@ type Config struct {
 	MaxCPUDuration time.Duration
 	// MaxMemorySize is the maximum memory allocation size in bytes (default: 1GB)
 	MaxMemorySize int64
+	// MaxIOSize is the maximum I/O operation size in bytes (default: 1GB)
+	MaxIOSize int64
+	// IODirName is the directory name for I/O operations under /tmp (default: hotpod)
+	// Must be lowercase alphanumeric with optional hyphens, no paths or special chars.
+	IODirName string
 }
 
 // Load reads configuration from environment variables.
@@ -45,6 +55,8 @@ func Load() (*Config, error) {
 		MaxConcurrentOps: 100,
 		MaxCPUDuration:   60 * time.Second,
 		MaxMemorySize:    1 << 30, // 1GB
+		MaxIOSize:        1 << 30, // 1GB
+		IODirName:        "hotpod",
 	}
 
 	var err error
@@ -80,6 +92,10 @@ func Load() (*Config, error) {
 	if cfg.MaxMemorySize, err = getEnvSize("HOTPOD_MAX_MEMORY_SIZE", cfg.MaxMemorySize); err != nil {
 		return nil, err
 	}
+	if cfg.MaxIOSize, err = getEnvSize("HOTPOD_MAX_IO_SIZE", cfg.MaxIOSize); err != nil {
+		return nil, err
+	}
+	cfg.IODirName = getEnvString("HOTPOD_IO_DIR_NAME", cfg.IODirName)
 
 	if err := cfg.Validate(); err != nil {
 		return nil, err
@@ -160,7 +176,7 @@ var sizeSuffixes = []sizeSuffix{
 // Supported suffixes: B, KB, MB, GB, TB (case-insensitive).
 func ParseSize(s string) (int64, error) {
 	if s == "" {
-		return 0, fmt.Errorf("empty size string")
+		return 0, errors.New("empty size string")
 	}
 
 	s = strings.TrimSpace(s)
@@ -175,10 +191,10 @@ func ParseSize(s string) (int64, error) {
 				return 0, fmt.Errorf("invalid size number: %w", err)
 			}
 			if n < 0 {
-				return 0, fmt.Errorf("size cannot be negative")
+				return 0, errors.New("size cannot be negative")
 			}
 			if n > math.MaxInt64/sm.mult {
-				return 0, fmt.Errorf("size overflow: value too large")
+				return 0, errors.New("size overflow: value too large")
 			}
 			return n * sm.mult, nil
 		}
@@ -190,9 +206,14 @@ func ParseSize(s string) (int64, error) {
 		return 0, fmt.Errorf("invalid size: %w", err)
 	}
 	if n < 0 {
-		return 0, fmt.Errorf("size cannot be negative")
+		return 0, errors.New("size cannot be negative")
 	}
 	return n, nil
+}
+
+// IOPath returns the full path for I/O operations (/tmp/<IODirName>).
+func (c *Config) IOPath() string {
+	return filepath.Join(IOBasePath, c.IODirName)
 }
 
 // Validate checks that configuration values are valid.
@@ -232,6 +253,47 @@ func (c *Config) Validate() error {
 
 	if c.MaxMemorySize < 0 {
 		return fmt.Errorf("max memory size must be non-negative, got %d", c.MaxMemorySize)
+	}
+
+	if c.MaxIOSize < 0 {
+		return fmt.Errorf("max I/O size must be non-negative, got %d", c.MaxIOSize)
+	}
+
+	if err := validateIODirName(c.IODirName); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateIODirName ensures the I/O directory name is safe.
+// It must be non-empty, lowercase alphanumeric with optional hyphens,
+// no slashes, no special characters, no URL-encoded sequences.
+func validateIODirName(name string) error {
+	if name == "" {
+		return errors.New("I/O directory name must not be empty")
+	}
+
+	if strings.Contains(name, "%") {
+		return errors.New("I/O directory name cannot contain URL-encoded sequences")
+	}
+
+	for i, r := range name {
+		isLower := r >= 'a' && r <= 'z'
+		isDigit := r >= '0' && r <= '9'
+		isHyphen := r == '-'
+
+		if !isLower && !isDigit && !isHyphen {
+			return fmt.Errorf("I/O directory name must be lowercase alphanumeric with hyphens only, got %q at position %d", string(r), i)
+		}
+	}
+
+	if strings.HasPrefix(name, "-") || strings.HasSuffix(name, "-") {
+		return errors.New("I/O directory name cannot start or end with hyphen")
+	}
+
+	if len(name) > 64 {
+		return errors.New("I/O directory name too long (max 64 characters)")
 	}
 
 	return nil

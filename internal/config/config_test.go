@@ -40,11 +40,11 @@ type negativeDurationTest struct {
 }
 
 var negativeDurationTests = []negativeDurationTest{
-	{"StartupDelay", Config{Port: 8080, LogLevel: "info", StartupDelay: -1}},
-	{"StartupJitter", Config{Port: 8080, LogLevel: "info", StartupJitter: -1}},
-	{"ShutdownDelay", Config{Port: 8080, LogLevel: "info", ShutdownDelay: -1}},
-	{"ShutdownTimeout", Config{Port: 8080, LogLevel: "info", ShutdownTimeout: -1}},
-	{"RequestTimeout", Config{Port: 8080, LogLevel: "info", RequestTimeout: -1}},
+	{"StartupDelay", Config{Port: 8080, LogLevel: "info", IODirName: "test", StartupDelay: -1}},
+	{"StartupJitter", Config{Port: 8080, LogLevel: "info", IODirName: "test", StartupJitter: -1}},
+	{"ShutdownDelay", Config{Port: 8080, LogLevel: "info", IODirName: "test", ShutdownDelay: -1}},
+	{"ShutdownTimeout", Config{Port: 8080, LogLevel: "info", IODirName: "test", ShutdownTimeout: -1}},
+	{"RequestTimeout", Config{Port: 8080, LogLevel: "info", IODirName: "test", RequestTimeout: -1}},
 }
 
 func TestLoadDefaults(t *testing.T) {
@@ -151,7 +151,7 @@ func TestLoadInvalidDuration(t *testing.T) {
 
 func TestValidatePortRange(t *testing.T) {
 	for _, tt := range portValidationTests {
-		cfg := &Config{Port: tt.port, LogLevel: "info"}
+		cfg := &Config{Port: tt.port, LogLevel: "info", IODirName: "test"}
 		err := cfg.Validate()
 		if (err != nil) != tt.wantErr {
 			t.Errorf("Validate() port=%d, error=%v, wantErr=%v", tt.port, err, tt.wantErr)
@@ -161,7 +161,7 @@ func TestValidatePortRange(t *testing.T) {
 
 func TestValidateLogLevel(t *testing.T) {
 	for _, tt := range logLevelValidationTests {
-		cfg := &Config{Port: 8080, LogLevel: tt.level}
+		cfg := &Config{Port: 8080, LogLevel: tt.level, IODirName: "test"}
 		err := cfg.Validate()
 		if (err != nil) != tt.wantErr {
 			t.Errorf("Validate() level=%q, error=%v, wantErr=%v", tt.level, err, tt.wantErr)
@@ -170,7 +170,7 @@ func TestValidateLogLevel(t *testing.T) {
 }
 
 func TestValidateNegativeDurations(t *testing.T) {
-	base := Config{Port: 8080, LogLevel: "info"}
+	base := Config{Port: 8080, LogLevel: "info", IODirName: "test"}
 	if err := base.Validate(); err != nil {
 		t.Fatalf("base config invalid: %v", err)
 	}
@@ -254,5 +254,72 @@ func TestLoadMaxCPUDurationFromEnv(t *testing.T) {
 	}
 	if cfg.MaxMemorySize != 512<<20 {
 		t.Errorf("MaxMemorySize = %d, want %d (512MB)", cfg.MaxMemorySize, 512<<20)
+	}
+}
+
+type ioDirNameValidationTest struct {
+	name    string
+	wantErr bool
+}
+
+var ioDirNameValidationTests = []ioDirNameValidationTest{
+	// Valid names
+	{"hotpod", false},
+	{"test", false},
+	{"my-app", false},
+	{"app123", false},
+	{"a", false},
+	{"abc-def-123", false},
+
+	// Invalid: empty
+	{"", true},
+
+	// Invalid: contains slashes (path traversal)
+	{"/tmp", true},
+	{"../etc", true},
+	{"foo/bar", true},
+	{"a/b", true},
+
+	// Invalid: uppercase
+	{"Hotpod", true},
+	{"HOTPOD", true},
+	{"myApp", true},
+
+	// Invalid: special characters
+	{"hot_pod", true},
+	{"hot.pod", true},
+	{"hot pod", true},
+	{"hot@pod", true},
+	{"hot$pod", true},
+
+	// Invalid: URL-encoded sequences
+	{"%2e%2e", true},
+	{"foo%2fbar", true},
+	{"test%00null", true},
+
+	// Invalid: starts/ends with hyphen
+	{"-hotpod", true},
+	{"hotpod-", true},
+	{"-", true},
+
+	// Invalid: too long
+	{"abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz01234", true},
+}
+
+func TestValidateIODirName(t *testing.T) {
+	for _, tt := range ioDirNameValidationTests {
+		cfg := &Config{Port: 8080, LogLevel: "info", IODirName: tt.name}
+		err := cfg.Validate()
+		if (err != nil) != tt.wantErr {
+			t.Errorf("Validate() IODirName=%q, error=%v, wantErr=%v", tt.name, err, tt.wantErr)
+		}
+	}
+}
+
+func TestIOPath(t *testing.T) {
+	cfg := &Config{IODirName: "myapp"}
+	want := "/tmp/myapp"
+	if got := cfg.IOPath(); got != want {
+		t.Errorf("IOPath() = %q, want %q", got, want)
 	}
 }
