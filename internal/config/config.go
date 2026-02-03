@@ -25,15 +25,18 @@ type Config struct {
 	DrainImmediately bool
 	// RequestTimeout is the server-side timeout for all requests
 	RequestTimeout time.Duration
+	// MaxConcurrentOps is the max concurrent operations per type (<=0 to disable)
+	MaxConcurrentOps int
 }
 
 // Load reads configuration from environment variables.
 func Load() (*Config, error) {
 	cfg := &Config{
-		Port:            8080,
-		LogLevel:        "info",
-		ShutdownTimeout: 30 * time.Second,
-		RequestTimeout:  5 * time.Minute,
+		Port:             8080,
+		LogLevel:         "info",
+		ShutdownTimeout:  30 * time.Second,
+		RequestTimeout:   5 * time.Minute,
+		MaxConcurrentOps: 100,
 	}
 
 	var err error
@@ -58,6 +61,9 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 	if cfg.RequestTimeout, err = getEnvDuration("HOTPOD_REQUEST_TIMEOUT", cfg.RequestTimeout); err != nil {
+		return nil, err
+	}
+	if cfg.MaxConcurrentOps, err = getEnvInt("HOTPOD_MAX_CONCURRENT_OPS", cfg.MaxConcurrentOps); err != nil {
 		return nil, err
 	}
 

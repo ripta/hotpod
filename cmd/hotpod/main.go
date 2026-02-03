@@ -7,6 +7,7 @@ import (
 
 	"github.com/ripta/hotpod/internal/config"
 	"github.com/ripta/hotpod/internal/handlers"
+	"github.com/ripta/hotpod/internal/load"
 	"github.com/ripta/hotpod/internal/server"
 )
 
@@ -23,6 +24,10 @@ func main() {
 
 	healthHandlers := handlers.NewHealthHandlers(srv.Lifecycle())
 	healthHandlers.Register(srv.Mux())
+
+	tracker := load.NewTracker(cfg.MaxConcurrentOps)
+	latencyHandlers := handlers.NewLatencyHandlers(tracker)
+	latencyHandlers.Register(srv.Mux())
 
 	slog.Info("hotpod starting",
 		"port", cfg.Port,
