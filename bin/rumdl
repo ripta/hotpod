@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+GLOOBIN_NAME="rumdl"
+GLOOBIN_VERSION="v0.0.203"
+
+GLOOBIN_OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
+GLOOBIN_ARCH="$(uname -m)"
+
+# Map OS/arch to rumdl's naming convention
+case "${GLOOBIN_OS}" in
+  darwin) RUMDL_OS="apple-darwin" ;;
+  linux)  RUMDL_OS="unknown-linux-gnu" ;;
+  *)      echo "Unsupported OS: ${GLOOBIN_OS}" >&2; exit 1 ;;
+esac
+
+case "${GLOOBIN_ARCH}" in
+  x86_64) RUMDL_ARCH="x86_64" ;;
+  arm64)  RUMDL_ARCH="aarch64" ;;
+  aarch64) RUMDL_ARCH="aarch64" ;;
+  *)      echo "Unsupported architecture: ${GLOOBIN_ARCH}" >&2; exit 1 ;;
+esac
+
+RUMDL_ASSET_NAME="rumdl-${GLOOBIN_VERSION}-${RUMDL_ARCH}-${RUMDL_OS}"
+GLOOPKG_URL="https://github.com/rvben/rumdl/releases/download/${GLOOBIN_VERSION}/${RUMDL_ASSET_NAME}.tar.gz"
+GLOOSHA_URL="https://github.com/rvben/rumdl/releases/download/${GLOOBIN_VERSION}/${RUMDL_ASSET_NAME}.tar.gz.sha256"
+
+CACHE_DIR="./.cache"
+CACHE_BIN="${CACHE_DIR}/${GLOOBIN_NAME}-${GLOOBIN_VERSION}"
+
+if [ ! -d "${CACHE_DIR}" ]; then
+  mkdir -p "${CACHE_DIR}"
+fi
+
+if [ ! -f "${CACHE_BIN}" ]; then
+  echo "Downloading ${GLOOBIN_NAME} ${GLOOBIN_VERSION}..." >&2
+
+  GLOOBIN_TMP=$(mktemp -d)
+  trap 'rm -rf "${GLOOBIN_TMP}"' EXIT
+
+  (
+    cd "${GLOOBIN_TMP}"
+    # Download using the asset name so checksum verification works
+    curl -fsSL "${GLOOPKG_URL}" -o "${RUMDL_ASSET_NAME}.tar.gz"
+
+    # Try to verify SHA256 if checksum file exists
+    if curl -fsSL "${GLOOSHA_URL}" -o "${RUMDL_ASSET_NAME}.tar.gz.sha256" 2>/dev/null; then
+      if [ -s "${RUMDL_ASSET_NAME}.tar.gz.sha256" ]; then
+        # Verify checksum
+        if command -v sha256sum >/dev/null 2>&1; then
+          sha256sum -c "${RUMDL_ASSET_NAME}.tar.gz.sha256"
+        elif command -v shasum >/dev/null 2>&1; then
+          shasum -a 256 -c "${RUMDL_ASSET_NAME}.tar.gz.sha256"
+        else
+          echo "Warning: No SHA256 verification tool found" >&2
+        fi
+      fi
+    fi
+
+    # Extract tarball
+    tar -xzf "${RUMDL_ASSET_NAME}.tar.gz"
+  )
+
+  echo "Installing ${GLOOBIN_NAME} into cache..." >&2
+  mv "${GLOOBIN_TMP}/${GLOOBIN_NAME}" "${CACHE_BIN}"
+  chmod +x "${CACHE_BIN}"
+fi
+
+exec "${CACHE_BIN}" "$@"
+

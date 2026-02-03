@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+GOBIN_NAME="goimports"
+GOBIN_PKG="golang.org/x/tools/cmd/goimports"
+GOBIN_VERSION="v0.30.0"
+
+CACHE_DIR="./.cache"
+CACHE_BIN="${CACHE_DIR}/${GOBIN_NAME}-${GOBIN_VERSION}"
+
+if [ ! -d "${CACHE_DIR}" ]; then
+  mkdir -p "${CACHE_DIR}"
+fi
+
+if [ ! -f "${CACHE_BIN}" ]; then
+  echo "Installing ${GOBIN_NAME} ${GOBIN_VERSION}..." >&2
+
+  GOBIN_TMP=$(mktemp -d)
+  trap 'rm -rf "${GOBIN_TMP}"' EXIT
+
+  GOBIN="${GOBIN_TMP}" go install -v $GOBIN_PKG@$GOBIN_VERSION
+  mv "${GOBIN_TMP}/${GOBIN_NAME}" "${CACHE_BIN}"
+fi
+
+exec "${CACHE_BIN}" "$@"
