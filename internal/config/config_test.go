@@ -181,3 +181,78 @@ func TestValidateNegativeDurations(t *testing.T) {
 		}
 	}
 }
+
+type parseSizeTest struct {
+	input   string
+	want    int64
+	wantErr bool
+}
+
+var parseSizeTests = []parseSizeTest{
+	{"100", 100, false},
+	{"0", 0, false},
+	{"1B", 1, false},
+	{"100B", 100, false},
+	{"1KB", 1024, false},
+	{"1kb", 1024, false},
+	{"10KB", 10240, false},
+	{"1MB", 1 << 20, false},
+	{"1GB", 1 << 30, false},
+	{"1TB", 1 << 40, false},
+	{"  100MB  ", 100 << 20, false},
+	{"", 0, true},
+	{"invalid", 0, true},
+	{"-1", 0, true},
+	{"-1MB", 0, true},
+	{"1XB", 0, true},
+	{"9999999999999999TB", 0, true},
+}
+
+func TestParseSize(t *testing.T) {
+	for _, tt := range parseSizeTests {
+		got, err := ParseSize(tt.input)
+		if (err != nil) != tt.wantErr {
+			t.Errorf("ParseSize(%q) error = %v, wantErr = %v", tt.input, err, tt.wantErr)
+			continue
+		}
+		if got != tt.want {
+			t.Errorf("ParseSize(%q) = %d, want %d", tt.input, got, tt.want)
+		}
+	}
+}
+
+func TestLoadMaxCPUDurationDefault(t *testing.T) {
+	os.Unsetenv("HOTPOD_MAX_CPU_DURATION")
+	os.Unsetenv("HOTPOD_MAX_MEMORY_SIZE")
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+
+	if cfg.MaxCPUDuration != 60*time.Second {
+		t.Errorf("MaxCPUDuration = %v, want 60s", cfg.MaxCPUDuration)
+	}
+	if cfg.MaxMemorySize != 1<<30 {
+		t.Errorf("MaxMemorySize = %d, want %d (1GB)", cfg.MaxMemorySize, 1<<30)
+	}
+}
+
+func TestLoadMaxCPUDurationFromEnv(t *testing.T) {
+	os.Setenv("HOTPOD_MAX_CPU_DURATION", "30s")
+	os.Setenv("HOTPOD_MAX_MEMORY_SIZE", "512MB")
+	defer os.Unsetenv("HOTPOD_MAX_CPU_DURATION")
+	defer os.Unsetenv("HOTPOD_MAX_MEMORY_SIZE")
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+
+	if cfg.MaxCPUDuration != 30*time.Second {
+		t.Errorf("MaxCPUDuration = %v, want 30s", cfg.MaxCPUDuration)
+	}
+	if cfg.MaxMemorySize != 512<<20 {
+		t.Errorf("MaxMemorySize = %d, want %d (512MB)", cfg.MaxMemorySize, 512<<20)
+	}
+}

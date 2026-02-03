@@ -29,6 +29,12 @@ func main() {
 	latencyHandlers := handlers.NewLatencyHandlers(tracker)
 	latencyHandlers.Register(srv.Mux())
 
+	cpuHandlers := handlers.NewCPUHandlers(tracker, cfg)
+	cpuHandlers.Register(srv.Mux())
+
+	memoryHandlers := handlers.NewMemoryHandlers(tracker, cfg)
+	memoryHandlers.Register(srv.Mux())
+
 	slog.Info("hotpod starting",
 		"port", cfg.Port,
 		"log_level", cfg.LogLevel,

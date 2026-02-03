@@ -2,8 +2,10 @@ package config
 
 import (
 	"fmt"
+	"math"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -27,6 +29,10 @@ type Config struct {
 	RequestTimeout time.Duration
 	// MaxConcurrentOps is the max concurrent operations per type (<=0 to disable)
 	MaxConcurrentOps int
+	// MaxCPUDuration is the maximum duration for CPU load operations (default: 60s)
+	MaxCPUDuration time.Duration
+	// MaxMemorySize is the maximum memory allocation size in bytes (default: 1GB)
+	MaxMemorySize int64
 }
 
 // Load reads configuration from environment variables.
@@ -37,6 +43,8 @@ func Load() (*Config, error) {
 		ShutdownTimeout:  30 * time.Second,
 		RequestTimeout:   5 * time.Minute,
 		MaxConcurrentOps: 100,
+		MaxCPUDuration:   60 * time.Second,
+		MaxMemorySize:    1 << 30, // 1GB
 	}
 
 	var err error
@@ -64,6 +72,12 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 	if cfg.MaxConcurrentOps, err = getEnvInt("HOTPOD_MAX_CONCURRENT_OPS", cfg.MaxConcurrentOps); err != nil {
+		return nil, err
+	}
+	if cfg.MaxCPUDuration, err = getEnvDuration("HOTPOD_MAX_CPU_DURATION", cfg.MaxCPUDuration); err != nil {
+		return nil, err
+	}
+	if cfg.MaxMemorySize, err = getEnvSize("HOTPOD_MAX_MEMORY_SIZE", cfg.MaxMemorySize); err != nil {
 		return nil, err
 	}
 
@@ -117,6 +131,70 @@ func getEnvBool(key string, defaultVal bool) (bool, error) {
 	return b, nil
 }
 
+func getEnvSize(key string, defaultVal int64) (int64, error) {
+	v, ok := os.LookupEnv(key)
+	if !ok {
+		return defaultVal, nil
+	}
+	size, err := ParseSize(v)
+	if err != nil {
+		return 0, fmt.Errorf("invalid %s: %w", key, err)
+	}
+	return size, nil
+}
+
+type sizeSuffix struct {
+	suffix string
+	mult   int64
+}
+
+var sizeSuffixes = []sizeSuffix{
+	{"TB", 1 << 40},
+	{"GB", 1 << 30},
+	{"MB", 1 << 20},
+	{"KB", 1 << 10},
+	{"B", 1},
+}
+
+// ParseSize parses a human-readable size string (e.g., "100MB", "1GB") into bytes.
+// Supported suffixes: B, KB, MB, GB, TB (case-insensitive).
+func ParseSize(s string) (int64, error) {
+	if s == "" {
+		return 0, fmt.Errorf("empty size string")
+	}
+
+	s = strings.TrimSpace(s)
+	s = strings.ToUpper(s)
+
+	for _, sm := range sizeSuffixes {
+		if strings.HasSuffix(s, sm.suffix) {
+			numStr := strings.TrimSuffix(s, sm.suffix)
+			numStr = strings.TrimSpace(numStr)
+			n, err := strconv.ParseInt(numStr, 10, 64)
+			if err != nil {
+				return 0, fmt.Errorf("invalid size number: %w", err)
+			}
+			if n < 0 {
+				return 0, fmt.Errorf("size cannot be negative")
+			}
+			if n > math.MaxInt64/sm.mult {
+				return 0, fmt.Errorf("size overflow: value too large")
+			}
+			return n * sm.mult, nil
+		}
+	}
+
+	// No suffix, treat as bytes
+	n, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		return 0, fmt.Errorf("invalid size: %w", err)
+	}
+	if n < 0 {
+		return 0, fmt.Errorf("size cannot be negative")
+	}
+	return n, nil
+}
+
 // Validate checks that configuration values are valid.
 func (c *Config) Validate() error {
 	if c.Port < 1 || c.Port > 65535 {
@@ -146,6 +224,14 @@ func (c *Config) Validate() error {
 	validLevels := map[string]bool{"debug": true, "info": true, "warn": true, "error": true}
 	if !validLevels[c.LogLevel] {
 		return fmt.Errorf("invalid log level %q, must be one of: debug, info, warn, error", c.LogLevel)
+	}
+
+	if c.MaxCPUDuration < 0 {
+		return fmt.Errorf("max CPU duration must be non-negative, got %s", c.MaxCPUDuration)
+	}
+
+	if c.MaxMemorySize < 0 {
+		return fmt.Errorf("max memory size must be non-negative, got %d", c.MaxMemorySize)
 	}
 
 	return nil
