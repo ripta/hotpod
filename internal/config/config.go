@@ -43,6 +43,8 @@ type Config struct {
 	// IODirName is the directory name for I/O operations under /tmp (default: hotpod)
 	// Must be lowercase alphanumeric with optional hyphens, no paths or special chars.
 	IODirName string
+	// EnablePprof enables pprof endpoints on a separate port (6060)
+	EnablePprof bool
 }
 
 // Load reads configuration from environment variables.
@@ -96,6 +98,9 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 	cfg.IODirName = getEnvString("HOTPOD_IO_DIR_NAME", cfg.IODirName)
+	if cfg.EnablePprof, err = getEnvBool("HOTPOD_ENABLE_PPROF", cfg.EnablePprof); err != nil {
+		return nil, err
+	}
 
 	if err := cfg.Validate(); err != nil {
 		return nil, err

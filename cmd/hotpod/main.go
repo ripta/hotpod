@@ -3,13 +3,19 @@ package main
 import (
 	"context"
 	"log/slog"
+	"net/http"
+	_ "net/http/pprof"
 	"os"
+	"time"
 
 	"github.com/ripta/hotpod/internal/config"
 	"github.com/ripta/hotpod/internal/handlers"
 	"github.com/ripta/hotpod/internal/load"
 	"github.com/ripta/hotpod/internal/server"
 )
+
+// version is set via ldflags at build time.
+var version = "dev"
 
 func main() {
 	cfg, err := config.Load()
@@ -41,16 +47,37 @@ func main() {
 	workHandlers := handlers.NewWorkHandlers(tracker, cfg)
 	workHandlers.Register(srv.Mux())
 
+	metricsHandlers := handlers.NewMetricsHandlers()
+	metricsHandlers.Register(srv.Mux())
+
+	infoHandlers := handlers.NewInfoHandlers(version, srv.Lifecycle(), cfg)
+	infoHandlers.Register(srv.Mux())
+
+	if cfg.EnablePprof {
+		go startPprof()
+	}
+
 	slog.Info("hotpod starting",
+		"version", version,
 		"port", cfg.Port,
 		"log_level", cfg.LogLevel,
 		"startup_delay", cfg.StartupDelay,
 		"startup_jitter", cfg.StartupJitter,
 	)
 
+	startTime := time.Now()
 	if err := srv.Run(context.Background()); err != nil {
 		slog.Error("server error", "error", err)
 		os.Exit(1)
+	}
+
+	slog.Info("hotpod shutdown complete", "uptime", time.Since(startTime))
+}
+
+func startPprof() {
+	slog.Info("pprof server starting", "port", 6060, "bind", "localhost")
+	if err := http.ListenAndServe("localhost:6060", nil); err != nil {
+		slog.Error("pprof server error", "error", err)
 	}
 }
 

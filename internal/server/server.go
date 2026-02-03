@@ -57,6 +57,7 @@ func (s *Server) Run(ctx context.Context) error {
 	handler = Chain(handler,
 		DrainCheck(s.lifecycle),
 		RequestTracking(s.lifecycle),
+		Metrics,
 		Recovery,
 		Logging,
 	)

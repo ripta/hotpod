@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/jonboulle/clockwork"
+
+	"github.com/ripta/hotpod/internal/metrics"
 )
 
 // State represents the server lifecycle state.
@@ -95,6 +97,10 @@ func (lc *Lifecycle) waitForStartup() {
 func (lc *Lifecycle) becomeReady() {
 	lc.readyTime = lc.clock.Now()
 	lc.state.Store(int32(StateReady))
+
+	metrics.StartupComplete.Set(1)
+	metrics.StartupDurationSeconds.Set(lc.readyTime.Sub(lc.startTime).Seconds())
+
 	slog.Info("server is ready")
 }
 
@@ -149,9 +155,23 @@ func (lc *Lifecycle) ReadyTime() time.Time {
 	return lc.readyTime
 }
 
+// StartTime returns when the lifecycle was created.
+func (lc *Lifecycle) StartTime() time.Time {
+	return lc.startTime
+}
+
+// StartupDuration returns the configured startup delay including jitter.
+func (lc *Lifecycle) StartupDuration() time.Duration {
+	return lc.startupDuration
+}
+
 // Shutdown initiates graceful shutdown and returns when complete or context is cancelled.
 func (lc *Lifecycle) Shutdown(ctx context.Context) error {
 	lc.state.Store(int32(StateShuttingDown))
+
+	metrics.ShutdownInProgress.Set(1)
+	metrics.ShutdownStartedTimestamp.Set(float64(lc.clock.Now().Unix()))
+
 	slog.Info("shutdown initiated")
 
 	if lc.shutdownDelay > 0 {

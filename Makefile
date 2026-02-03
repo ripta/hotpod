@@ -1,8 +1,11 @@
 .PHONY: build test lint docker-build k8s-validate quick pre-commit all help
 .DEFAULT_GOAL := help
 
+VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
+LDFLAGS := -X main.version=$(VERSION)
+
 build: ## Build binary to bin/hotpod
-	@go build -o bin/hotpod ./cmd/hotpod
+	@go build -ldflags "$(LDFLAGS)" -o bin/hotpod ./cmd/hotpod
 
 test: ## Run tests with coverage
 	@go test -cover ./...

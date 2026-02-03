@@ -16,6 +16,8 @@ func testConfig() *config.Config {
 	return &config.Config{
 		MaxCPUDuration: 60 * time.Second,
 		MaxMemorySize:  1 << 30,
+		MaxIOSize:      1 << 30,
+		IODirName:      "hotpod-test",
 	}
 }
 
