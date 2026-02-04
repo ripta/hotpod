@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/ripta/hotpod/internal/config"
+	"github.com/ripta/hotpod/internal/fault"
 	"github.com/ripta/hotpod/internal/handlers"
 	"github.com/ripta/hotpod/internal/load"
 	"github.com/ripta/hotpod/internal/server"
@@ -26,7 +27,8 @@ func main() {
 
 	initLogger(cfg.LogLevel)
 
-	srv := server.New(cfg)
+	injector := fault.NewInjector()
+	srv := server.New(cfg, injector)
 
 	healthHandlers := handlers.NewHealthHandlers(srv.Lifecycle())
 	healthHandlers.Register(srv.Mux())
@@ -52,6 +54,9 @@ func main() {
 
 	infoHandlers := handlers.NewInfoHandlers(version, srv.Lifecycle(), cfg)
 	infoHandlers.Register(srv.Mux())
+
+	faultHandlers := handlers.NewFaultHandlers(!cfg.DisableChaos)
+	faultHandlers.Register(srv.Mux())
 
 	if cfg.EnablePprof {
 		go startPprof()

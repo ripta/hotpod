@@ -45,6 +45,8 @@ type Config struct {
 	IODirName string
 	// EnablePprof enables pprof endpoints on a separate port (6060)
 	EnablePprof bool
+	// DisableChaos disables /fault/* chaos engineering endpoints
+	DisableChaos bool
 }
 
 // Load reads configuration from environment variables.
@@ -99,6 +101,9 @@ func Load() (*Config, error) {
 	}
 	cfg.IODirName = getEnvString("HOTPOD_IO_DIR_NAME", cfg.IODirName)
 	if cfg.EnablePprof, err = getEnvBool("HOTPOD_ENABLE_PPROF", cfg.EnablePprof); err != nil {
+		return nil, err
+	}
+	if cfg.DisableChaos, err = getEnvBool("HOTPOD_DISABLE_CHAOS", cfg.DisableChaos); err != nil {
 		return nil, err
 	}
 

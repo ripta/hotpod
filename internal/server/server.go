@@ -10,18 +10,20 @@ import (
 	"time"
 
 	"github.com/ripta/hotpod/internal/config"
+	"github.com/ripta/hotpod/internal/fault"
 )
 
 // Server is the main HTTP server for hotpod.
 type Server struct {
 	cfg        *config.Config
 	lifecycle  *Lifecycle
+	injector   *fault.Injector
 	httpServer *http.Server
 	mux        *http.ServeMux
 }
 
 // New creates a new Server with the given configuration.
-func New(cfg *config.Config) *Server {
+func New(cfg *config.Config, injector *fault.Injector) *Server {
 	lc := NewLifecycle(
 		cfg.StartupDelay,
 		cfg.StartupJitter,
@@ -35,10 +37,16 @@ func New(cfg *config.Config) *Server {
 	s := &Server{
 		cfg:       cfg,
 		lifecycle: lc,
+		injector:  injector,
 		mux:       mux,
 	}
 
 	return s
+}
+
+// Injector returns the server's fault injector.
+func (s *Server) Injector() *fault.Injector {
+	return s.injector
 }
 
 // Lifecycle returns the server's lifecycle manager.
@@ -56,6 +64,7 @@ func (s *Server) Run(ctx context.Context) error {
 	var handler http.Handler = s.mux
 	handler = Chain(handler,
 		DrainCheck(s.lifecycle),
+		ErrorInjection(s.injector),
 		RequestTracking(s.lifecycle),
 		Metrics,
 		Recovery,

@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"log/slog"
 	"net/http"
 	"runtime/debug"
@@ -8,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ripta/hotpod/internal/fault"
 	"github.com/ripta/hotpod/internal/metrics"
 )
 
@@ -144,6 +146,34 @@ func normalizeEndpoint(path string) string {
 		return "/admin/*"
 	default:
 		return "unknown"
+	}
+}
+
+// ErrorInjection returns middleware that injects errors based on fault configuration.
+func ErrorInjection(injector *fault.Injector) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if injector == nil {
+				next.ServeHTTP(w, r)
+				return
+			}
+
+			endpoint := normalizeEndpoint(r.URL.Path)
+			statusCode := injector.ShouldInjectError(endpoint)
+			if statusCode != 0 {
+				metrics.FaultErrorsInjectedTotal.WithLabelValues(endpoint, strconv.Itoa(statusCode)).Inc()
+
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(statusCode)
+				body := fmt.Sprintf(`{"error":"injected fault","code":"FAULT_INJECTED","status":%d}`, statusCode)
+				if _, err := w.Write([]byte(body)); err != nil {
+					slog.Warn("failed to write fault injection response", "error", err)
+				}
+				return
+			}
+
+			next.ServeHTTP(w, r)
+		})
 	}
 }
 

@@ -140,3 +140,26 @@ var (
 		},
 	)
 )
+
+// Fault injection metrics track chaos engineering operations.
+var (
+	// FaultErrorsInjectedTotal counts errors injected by endpoint and status.
+	FaultErrorsInjectedTotal = promauto.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: Namespace,
+			Name:      "fault_errors_injected_total",
+			Help:      "Total number of errors injected by fault injection.",
+		},
+		[]string{"endpoint", "status"},
+	)
+
+	// FaultErrorRate tracks the configured error rate by endpoint.
+	FaultErrorRate = promauto.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: Namespace,
+			Name:      "fault_error_rate",
+			Help:      "Configured error injection rate by endpoint.",
+		},
+		[]string{"endpoint"},
+	)
+)
