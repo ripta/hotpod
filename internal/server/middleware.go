@@ -138,8 +138,14 @@ func normalizeEndpoint(path string) string {
 		return "/work"
 	case path == "/latency":
 		return "/latency"
-	case strings.HasPrefix(path, "/queue/"):
-		return "/queue/*"
+	case path == "/queue/enqueue":
+		return "/queue/enqueue"
+	case path == "/queue/process":
+		return "/queue/process"
+	case path == "/queue/status":
+		return "/queue/status"
+	case path == "/queue/clear":
+		return "/queue/clear"
 	case strings.HasPrefix(path, "/fault/"):
 		return "/fault/*"
 	case strings.HasPrefix(path, "/admin/"):

@@ -163,3 +163,80 @@ var (
 		[]string{"endpoint"},
 	)
 )
+
+// Queue metrics track work queue state for KEDA/external HPA scaling.
+var (
+	// QueueDepth tracks the total number of items in the queue.
+	QueueDepth = promauto.NewGauge(
+		prometheus.GaugeOpts{
+			Namespace: Namespace,
+			Name:      "queue_depth",
+			Help:      "Total number of items in the queue.",
+		},
+	)
+
+	// QueueDepthByPriority tracks queue depth by priority level.
+	QueueDepthByPriority = promauto.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: Namespace,
+			Name:      "queue_depth_by_priority",
+			Help:      "Number of items in the queue by priority.",
+		},
+		[]string{"priority"},
+	)
+
+	// QueueItemsEnqueuedTotal tracks total items ever enqueued.
+	QueueItemsEnqueuedTotal = promauto.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: Namespace,
+			Name:      "queue_items_enqueued_total",
+			Help:      "Total number of items enqueued.",
+		},
+	)
+
+	// QueueItemsProcessedTotal counts items successfully processed.
+	QueueItemsProcessedTotal = promauto.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: Namespace,
+			Name:      "queue_items_processed_total",
+			Help:      "Total number of items processed successfully.",
+		},
+	)
+
+	// QueueItemsFailedTotal counts items that failed processing.
+	QueueItemsFailedTotal = promauto.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: Namespace,
+			Name:      "queue_items_failed_total",
+			Help:      "Total number of items that failed processing.",
+		},
+	)
+
+	// QueueActiveWorkers tracks the number of workers currently processing items.
+	QueueActiveWorkers = promauto.NewGauge(
+		prometheus.GaugeOpts{
+			Namespace: Namespace,
+			Name:      "queue_active_workers",
+			Help:      "Number of workers currently processing items.",
+		},
+	)
+
+	// QueueProcessingSeconds tracks item processing duration.
+	QueueProcessingSeconds = promauto.NewHistogram(
+		prometheus.HistogramOpts{
+			Namespace: Namespace,
+			Name:      "queue_processing_seconds",
+			Help:      "Time spent processing queue items.",
+			Buckets:   prometheus.DefBuckets,
+		},
+	)
+
+	// QueueOldestItemAgeSeconds tracks the age of the oldest item in the queue.
+	QueueOldestItemAgeSeconds = promauto.NewGauge(
+		prometheus.GaugeOpts{
+			Namespace: Namespace,
+			Name:      "queue_oldest_item_age_seconds",
+			Help:      "Age of the oldest item in the queue in seconds.",
+		},
+	)
+)

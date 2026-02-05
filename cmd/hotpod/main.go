@@ -12,6 +12,7 @@ import (
 	"github.com/ripta/hotpod/internal/fault"
 	"github.com/ripta/hotpod/internal/handlers"
 	"github.com/ripta/hotpod/internal/load"
+	"github.com/ripta/hotpod/internal/queue"
 	"github.com/ripta/hotpod/internal/server"
 )
 
@@ -58,6 +59,10 @@ func main() {
 	faultHandlers := handlers.NewFaultHandlers(!cfg.DisableChaos)
 	faultHandlers.Register(srv.Mux())
 
+	workQueue := queue.New(cfg.QueueMaxDepth)
+	queueHandlers := handlers.NewQueueHandlers(!cfg.DisableQueue, workQueue, cfg.QueueDefaultWorkers)
+	queueHandlers.Register(srv.Mux())
+
 	if cfg.EnablePprof {
 		go startPprof()
 	}
@@ -76,6 +81,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	queueHandlers.WorkerPool().Stop()
 	slog.Info("hotpod shutdown complete", "uptime", time.Since(startTime))
 }
 

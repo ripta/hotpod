@@ -47,20 +47,28 @@ type Config struct {
 	EnablePprof bool
 	// DisableChaos disables /fault/* chaos engineering endpoints
 	DisableChaos bool
+	// DisableQueue disables /queue/* endpoints
+	DisableQueue bool
+	// QueueMaxDepth is the maximum number of items in the queue
+	QueueMaxDepth int
+	// QueueDefaultWorkers is the default number of queue workers
+	QueueDefaultWorkers int
 }
 
 // Load reads configuration from environment variables.
 func Load() (*Config, error) {
 	cfg := &Config{
-		Port:             8080,
-		LogLevel:         "info",
-		ShutdownTimeout:  30 * time.Second,
-		RequestTimeout:   5 * time.Minute,
-		MaxConcurrentOps: 100,
-		MaxCPUDuration:   60 * time.Second,
-		MaxMemorySize:    1 << 30, // 1GB
-		MaxIOSize:        1 << 30, // 1GB
-		IODirName:        "hotpod",
+		Port:                8080,
+		LogLevel:            "info",
+		ShutdownTimeout:     30 * time.Second,
+		RequestTimeout:      5 * time.Minute,
+		MaxConcurrentOps:    100,
+		MaxCPUDuration:      60 * time.Second,
+		MaxMemorySize:       1 << 30, // 1GB
+		MaxIOSize:           1 << 30, // 1GB
+		IODirName:           "hotpod",
+		QueueMaxDepth:       10000,
+		QueueDefaultWorkers: 1,
 	}
 
 	var err error
@@ -104,6 +112,15 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 	if cfg.DisableChaos, err = getEnvBool("HOTPOD_DISABLE_CHAOS", cfg.DisableChaos); err != nil {
+		return nil, err
+	}
+	if cfg.DisableQueue, err = getEnvBool("HOTPOD_DISABLE_QUEUE", cfg.DisableQueue); err != nil {
+		return nil, err
+	}
+	if cfg.QueueMaxDepth, err = getEnvInt("HOTPOD_QUEUE_MAX_DEPTH", cfg.QueueMaxDepth); err != nil {
+		return nil, err
+	}
+	if cfg.QueueDefaultWorkers, err = getEnvInt("HOTPOD_QUEUE_DEFAULT_WORKERS", cfg.QueueDefaultWorkers); err != nil {
 		return nil, err
 	}
 

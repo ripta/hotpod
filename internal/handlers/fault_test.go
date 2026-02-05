@@ -7,6 +7,13 @@ import (
 	"testing"
 )
 
+var faultEndpoints = []endpoint{
+	{"POST", "/fault/crash"},
+	{"POST", "/fault/hang"},
+	{"POST", "/fault/oom"},
+	{"GET", "/fault/error"},
+}
+
 func TestFaultCrashDisabled(t *testing.T) {
 	h := NewFaultHandlers(false)
 
@@ -224,18 +231,7 @@ func TestFaultRegister(t *testing.T) {
 	mux := http.NewServeMux()
 	h.Register(mux)
 
-	// Test that routes are registered (will return 403 since disabled)
-	endpoints := []struct {
-		method string
-		path   string
-	}{
-		{"POST", "/fault/crash"},
-		{"POST", "/fault/hang"},
-		{"POST", "/fault/oom"},
-		{"GET", "/fault/error"},
-	}
-
-	for _, ep := range endpoints {
+	for _, ep := range faultEndpoints {
 		req := httptest.NewRequest(ep.method, ep.path, nil)
 		rec := httptest.NewRecorder()
 		mux.ServeHTTP(rec, req)
