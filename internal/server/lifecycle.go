@@ -40,6 +40,8 @@ type Lifecycle struct {
 	clock clockwork.Clock
 	// state holds the current lifecycle state (StateStarting, StateReady, StateShuttingDown)
 	state atomic.Int32
+	// readyOverride overrides the readiness check (0=no override, 1=force not-ready, 2=force ready)
+	readyOverride atomic.Int32
 	// inFlight tracks the number of requests currently being processed
 	inFlight atomic.Int64
 	// startTime is when the lifecycle was created
@@ -109,8 +111,45 @@ func (lc *Lifecycle) State() State {
 	return State(lc.state.Load())
 }
 
+// Readiness override values for readyOverride atomic.
+const (
+	readyOverrideNone     int32 = 0
+	readyOverrideNotReady int32 = 1
+	readyOverrideReady    int32 = 2
+)
+
+// SetReadyOverride sets the readiness override. Pass nil to clear the override,
+// true to force ready, or false to force not-ready.
+func (lc *Lifecycle) SetReadyOverride(ready *bool) {
+	if ready == nil {
+		lc.readyOverride.Store(readyOverrideNone)
+	} else if *ready {
+		lc.readyOverride.Store(readyOverrideReady)
+	} else {
+		lc.readyOverride.Store(readyOverrideNotReady)
+	}
+}
+
+// ReadyOverride returns the current readiness override state, or nil if no override is set.
+func (lc *Lifecycle) ReadyOverride() *bool {
+	switch lc.readyOverride.Load() {
+	case readyOverrideReady:
+		v := true
+		return &v
+	case readyOverrideNotReady:
+		v := false
+		return &v
+	default:
+		return nil
+	}
+}
+
 // IsReady returns true if the server is ready to accept traffic.
+// If a readiness override is set, it takes precedence over the lifecycle state.
 func (lc *Lifecycle) IsReady() bool {
+	if override := lc.readyOverride.Load(); override != readyOverrideNone {
+		return override == readyOverrideReady
+	}
 	return lc.State() == StateReady
 }
 

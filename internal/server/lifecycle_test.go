@@ -195,6 +195,70 @@ func TestLifecycleNoDrainImmediately(t *testing.T) {
 	}
 }
 
+func TestLifecycleReadyOverrideForceNotReady(t *testing.T) {
+	clock := clockwork.NewFakeClock()
+	lc := NewLifecycleWithClock(clock, 0, 0, 0, 30*time.Second, false)
+
+	if !lc.IsReady() {
+		t.Fatal("expected lifecycle to be ready with no delay")
+	}
+
+	notReady := false
+	lc.SetReadyOverride(&notReady)
+
+	if lc.IsReady() {
+		t.Error("expected IsReady() = false after force-not-ready override")
+	}
+
+	override := lc.ReadyOverride()
+	if override == nil || *override != false {
+		t.Error("expected ReadyOverride() to return false")
+	}
+}
+
+func TestLifecycleReadyOverrideForceReady(t *testing.T) {
+	clock := clockwork.NewFakeClock()
+	lc := NewLifecycleWithClock(clock, 100*time.Millisecond, 0, 0, 30*time.Second, false)
+
+	if lc.IsReady() {
+		t.Fatal("expected lifecycle to not be ready during startup delay")
+	}
+
+	ready := true
+	lc.SetReadyOverride(&ready)
+
+	if !lc.IsReady() {
+		t.Error("expected IsReady() = true after force-ready override")
+	}
+
+	override := lc.ReadyOverride()
+	if override == nil || *override != true {
+		t.Error("expected ReadyOverride() to return true")
+	}
+}
+
+func TestLifecycleReadyOverrideClear(t *testing.T) {
+	clock := clockwork.NewFakeClock()
+	lc := NewLifecycleWithClock(clock, 0, 0, 0, 30*time.Second, false)
+
+	notReady := false
+	lc.SetReadyOverride(&notReady)
+
+	if lc.IsReady() {
+		t.Error("expected IsReady() = false after force-not-ready override")
+	}
+
+	lc.SetReadyOverride(nil)
+
+	if !lc.IsReady() {
+		t.Error("expected IsReady() = true after clearing override")
+	}
+
+	if lc.ReadyOverride() != nil {
+		t.Error("expected ReadyOverride() = nil after clearing override")
+	}
+}
+
 func TestStateString(t *testing.T) {
 	for _, tt := range stateStringTests {
 		if got := tt.state.String(); got != tt.want {

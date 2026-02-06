@@ -44,6 +44,8 @@ func main() {
 
 	var runner *sidecar.Runner
 	var queueHandlers *handlers.QueueHandlers
+	var workQueue *queue.Queue
+	var workerPool *queue.WorkerPool
 
 	if cfg.Mode == "sidecar" {
 		metrics.SidecarMode.Set(1)
@@ -70,10 +72,14 @@ func main() {
 		faultHandlers := handlers.NewFaultHandlers(!cfg.DisableChaos)
 		faultHandlers.Register(srv.Mux())
 
-		workQueue := queue.New(cfg.QueueMaxDepth)
+		workQueue = queue.New(cfg.QueueMaxDepth)
 		queueHandlers = handlers.NewQueueHandlers(!cfg.DisableQueue, workQueue, cfg.QueueDefaultWorkers)
 		queueHandlers.Register(srv.Mux())
+		workerPool = queueHandlers.WorkerPool()
 	}
+
+	adminHandlers := handlers.NewAdminHandlers(cfg.AdminToken, srv.Lifecycle(), injector, cfg, workQueue, workerPool)
+	adminHandlers.Register(srv.Mux())
 
 	if cfg.EnablePprof {
 		go startPprof()

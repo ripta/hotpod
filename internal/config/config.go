@@ -63,6 +63,8 @@ type Config struct {
 	SidecarMemoryBaseline int64
 	// SidecarRequestOverhead is extra CPU burn per request (default: 0)
 	SidecarRequestOverhead time.Duration
+	// AdminToken is the authentication token for /admin/* endpoints (empty = open access)
+	AdminToken string
 }
 
 // Load reads configuration from environment variables.
@@ -151,6 +153,7 @@ func Load() (*Config, error) {
 	if cfg.SidecarRequestOverhead, err = getEnvCPU("HOTPOD_SIDECAR_REQUEST_OVERHEAD", cfg.SidecarRequestOverhead); err != nil {
 		return nil, err
 	}
+	cfg.AdminToken = getEnvString("HOTPOD_ADMIN_TOKEN", cfg.AdminToken)
 
 	if err := cfg.Validate(); err != nil {
 		return nil, err

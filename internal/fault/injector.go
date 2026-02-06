@@ -121,6 +121,29 @@ func (i *Injector) Reset() {
 	i.globalConfig = nil
 }
 
+// GetGlobalConfig returns the current global error configuration, or nil if not set.
+func (i *Injector) GetGlobalConfig() *ErrorConfig {
+	i.mu.RLock()
+	defer i.mu.RUnlock()
+	if i.globalConfig != nil && !i.globalConfig.IsExpired() {
+		return i.globalConfig
+	}
+	return nil
+}
+
+// GetEndpointConfigs returns a copy of all endpoint-specific error configurations.
+func (i *Injector) GetEndpointConfigs() map[string]*ErrorConfig {
+	i.mu.RLock()
+	defer i.mu.RUnlock()
+	result := make(map[string]*ErrorConfig, len(i.configs))
+	for k, v := range i.configs {
+		if !v.IsExpired() {
+			result[k] = v
+		}
+	}
+	return result
+}
+
 // GetEndpointRate returns the current error rate for an endpoint (for metrics).
 func (i *Injector) GetEndpointRate(endpoint string) float64 {
 	cfg := i.GetConfig(endpoint)
