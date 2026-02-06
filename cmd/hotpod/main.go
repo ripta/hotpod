@@ -12,8 +12,10 @@ import (
 	"github.com/ripta/hotpod/internal/fault"
 	"github.com/ripta/hotpod/internal/handlers"
 	"github.com/ripta/hotpod/internal/load"
+	"github.com/ripta/hotpod/internal/metrics"
 	"github.com/ripta/hotpod/internal/queue"
 	"github.com/ripta/hotpod/internal/server"
+	"github.com/ripta/hotpod/internal/sidecar"
 )
 
 // version is set via ldflags at build time.
@@ -34,34 +36,44 @@ func main() {
 	healthHandlers := handlers.NewHealthHandlers(srv.Lifecycle())
 	healthHandlers.Register(srv.Mux())
 
-	tracker := load.NewTracker(cfg.MaxConcurrentOps)
-	latencyHandlers := handlers.NewLatencyHandlers(tracker)
-	latencyHandlers.Register(srv.Mux())
-
-	cpuHandlers := handlers.NewCPUHandlers(tracker, cfg)
-	cpuHandlers.Register(srv.Mux())
-
-	memoryHandlers := handlers.NewMemoryHandlers(tracker, cfg)
-	memoryHandlers.Register(srv.Mux())
-
-	ioHandlers := handlers.NewIOHandlers(tracker, cfg)
-	ioHandlers.Register(srv.Mux())
-
-	workHandlers := handlers.NewWorkHandlers(tracker, cfg)
-	workHandlers.Register(srv.Mux())
-
 	metricsHandlers := handlers.NewMetricsHandlers()
 	metricsHandlers.Register(srv.Mux())
 
 	infoHandlers := handlers.NewInfoHandlers(version, srv.Lifecycle(), cfg)
 	infoHandlers.Register(srv.Mux())
 
-	faultHandlers := handlers.NewFaultHandlers(!cfg.DisableChaos)
-	faultHandlers.Register(srv.Mux())
+	var runner *sidecar.Runner
+	var queueHandlers *handlers.QueueHandlers
 
-	workQueue := queue.New(cfg.QueueMaxDepth)
-	queueHandlers := handlers.NewQueueHandlers(!cfg.DisableQueue, workQueue, cfg.QueueDefaultWorkers)
-	queueHandlers.Register(srv.Mux())
+	if cfg.Mode == "sidecar" {
+		metrics.SidecarMode.Set(1)
+		runner = sidecar.New(cfg.SidecarCPUBaseline, cfg.SidecarCPUJitter, cfg.SidecarMemoryBaseline)
+	} else {
+		metrics.SidecarMode.Set(0)
+
+		tracker := load.NewTracker(cfg.MaxConcurrentOps)
+		latencyHandlers := handlers.NewLatencyHandlers(tracker)
+		latencyHandlers.Register(srv.Mux())
+
+		cpuHandlers := handlers.NewCPUHandlers(tracker, cfg)
+		cpuHandlers.Register(srv.Mux())
+
+		memoryHandlers := handlers.NewMemoryHandlers(tracker, cfg)
+		memoryHandlers.Register(srv.Mux())
+
+		ioHandlers := handlers.NewIOHandlers(tracker, cfg)
+		ioHandlers.Register(srv.Mux())
+
+		workHandlers := handlers.NewWorkHandlers(tracker, cfg)
+		workHandlers.Register(srv.Mux())
+
+		faultHandlers := handlers.NewFaultHandlers(!cfg.DisableChaos)
+		faultHandlers.Register(srv.Mux())
+
+		workQueue := queue.New(cfg.QueueMaxDepth)
+		queueHandlers = handlers.NewQueueHandlers(!cfg.DisableQueue, workQueue, cfg.QueueDefaultWorkers)
+		queueHandlers.Register(srv.Mux())
+	}
 
 	if cfg.EnablePprof {
 		go startPprof()
@@ -69,11 +81,16 @@ func main() {
 
 	slog.Info("hotpod starting",
 		"version", version,
+		"mode", cfg.Mode,
 		"port", cfg.Port,
 		"log_level", cfg.LogLevel,
 		"startup_delay", cfg.StartupDelay,
 		"startup_jitter", cfg.StartupJitter,
 	)
+
+	if runner != nil {
+		go runner.Start(context.Background())
+	}
 
 	startTime := time.Now()
 	if err := srv.Run(context.Background()); err != nil {
@@ -81,7 +98,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	queueHandlers.WorkerPool().Stop()
+	if runner != nil {
+		runner.Stop()
+	}
+	if queueHandlers != nil {
+		queueHandlers.WorkerPool().Stop()
+	}
 	slog.Info("hotpod shutdown complete", "uptime", time.Since(startTime))
 }
 

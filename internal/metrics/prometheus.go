@@ -164,6 +164,36 @@ var (
 	)
 )
 
+// Sidecar metrics track resource consumption in sidecar mode.
+var (
+	// SidecarCPUBurnSecondsTotal counts total CPU time burned by sidecar mode.
+	SidecarCPUBurnSecondsTotal = promauto.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: Namespace,
+			Name:      "sidecar_cpu_burn_seconds_total",
+			Help:      "Total CPU time burned by sidecar mode in seconds.",
+		},
+	)
+
+	// SidecarMemoryHeldBytes tracks memory held by sidecar mode.
+	SidecarMemoryHeldBytes = promauto.NewGauge(
+		prometheus.GaugeOpts{
+			Namespace: Namespace,
+			Name:      "sidecar_memory_held_bytes",
+			Help:      "Bytes currently held by sidecar memory allocation.",
+		},
+	)
+
+	// SidecarMode indicates whether sidecar mode is active (0 or 1).
+	SidecarMode = promauto.NewGauge(
+		prometheus.GaugeOpts{
+			Namespace: Namespace,
+			Name:      "sidecar_mode",
+			Help:      "Whether the server is running in sidecar mode (0 or 1).",
+		},
+	)
+)
+
 // Queue metrics track work queue state for KEDA/external HPA scaling.
 var (
 	// QueueDepth tracks the total number of items in the queue.

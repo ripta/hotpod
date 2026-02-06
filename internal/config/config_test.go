@@ -40,11 +40,11 @@ type negativeDurationTest struct {
 }
 
 var negativeDurationTests = []negativeDurationTest{
-	{"StartupDelay", Config{Port: 8080, LogLevel: "info", IODirName: "test", StartupDelay: -1}},
-	{"StartupJitter", Config{Port: 8080, LogLevel: "info", IODirName: "test", StartupJitter: -1}},
-	{"ShutdownDelay", Config{Port: 8080, LogLevel: "info", IODirName: "test", ShutdownDelay: -1}},
-	{"ShutdownTimeout", Config{Port: 8080, LogLevel: "info", IODirName: "test", ShutdownTimeout: -1}},
-	{"RequestTimeout", Config{Port: 8080, LogLevel: "info", IODirName: "test", RequestTimeout: -1}},
+	{"StartupDelay", Config{Port: 8080, LogLevel: "info", IODirName: "test", Mode: "app", StartupDelay: -1}},
+	{"StartupJitter", Config{Port: 8080, LogLevel: "info", IODirName: "test", Mode: "app", StartupJitter: -1}},
+	{"ShutdownDelay", Config{Port: 8080, LogLevel: "info", IODirName: "test", Mode: "app", ShutdownDelay: -1}},
+	{"ShutdownTimeout", Config{Port: 8080, LogLevel: "info", IODirName: "test", Mode: "app", ShutdownTimeout: -1}},
+	{"RequestTimeout", Config{Port: 8080, LogLevel: "info", IODirName: "test", Mode: "app", RequestTimeout: -1}},
 }
 
 func TestLoadDefaults(t *testing.T) {
@@ -151,7 +151,7 @@ func TestLoadInvalidDuration(t *testing.T) {
 
 func TestValidatePortRange(t *testing.T) {
 	for _, tt := range portValidationTests {
-		cfg := &Config{Port: tt.port, LogLevel: "info", IODirName: "test"}
+		cfg := &Config{Port: tt.port, LogLevel: "info", IODirName: "test", Mode: "app"}
 		err := cfg.Validate()
 		if (err != nil) != tt.wantErr {
 			t.Errorf("Validate() port=%d, error=%v, wantErr=%v", tt.port, err, tt.wantErr)
@@ -161,7 +161,7 @@ func TestValidatePortRange(t *testing.T) {
 
 func TestValidateLogLevel(t *testing.T) {
 	for _, tt := range logLevelValidationTests {
-		cfg := &Config{Port: 8080, LogLevel: tt.level, IODirName: "test"}
+		cfg := &Config{Port: 8080, LogLevel: tt.level, IODirName: "test", Mode: "app"}
 		err := cfg.Validate()
 		if (err != nil) != tt.wantErr {
 			t.Errorf("Validate() level=%q, error=%v, wantErr=%v", tt.level, err, tt.wantErr)
@@ -170,7 +170,7 @@ func TestValidateLogLevel(t *testing.T) {
 }
 
 func TestValidateNegativeDurations(t *testing.T) {
-	base := Config{Port: 8080, LogLevel: "info", IODirName: "test"}
+	base := Config{Port: 8080, LogLevel: "info", IODirName: "test", Mode: "app"}
 	if err := base.Validate(); err != nil {
 		t.Fatalf("base config invalid: %v", err)
 	}
@@ -308,7 +308,7 @@ var ioDirNameValidationTests = []ioDirNameValidationTest{
 
 func TestValidateIODirName(t *testing.T) {
 	for _, tt := range ioDirNameValidationTests {
-		cfg := &Config{Port: 8080, LogLevel: "info", IODirName: tt.name}
+		cfg := &Config{Port: 8080, LogLevel: "info", IODirName: tt.name, Mode: "app"}
 		err := cfg.Validate()
 		if (err != nil) != tt.wantErr {
 			t.Errorf("Validate() IODirName=%q, error=%v, wantErr=%v", tt.name, err, tt.wantErr)
@@ -321,5 +321,188 @@ func TestIOPath(t *testing.T) {
 	want := "/tmp/myapp"
 	if got := cfg.IOPath(); got != want {
 		t.Errorf("IOPath() = %q, want %q", got, want)
+	}
+}
+
+type parseCPUTest struct {
+	input   string
+	want    time.Duration
+	wantErr bool
+}
+
+var parseCPUTests = []parseCPUTest{
+	{"100m", 100 * time.Millisecond, false},
+	{"0m", 0, false},
+	{"500m", 500 * time.Millisecond, false},
+	{"1000m", 1000 * time.Millisecond, false},
+	{"1500m", 1500 * time.Millisecond, false},
+	{"0.5", 500 * time.Millisecond, false},
+	{"1", 1 * time.Second, false},
+	{"0", 0, false},
+	{"0.1", 100 * time.Millisecond, false},
+	{"  100m  ", 100 * time.Millisecond, false},
+	{"", 0, true},
+	{"-100m", 0, true},
+	{"-0.5", 0, true},
+	{"invalid", 0, true},
+	{"abc m", 0, true},
+}
+
+func TestParseCPU(t *testing.T) {
+	for _, tt := range parseCPUTests {
+		got, err := ParseCPU(tt.input)
+		if (err != nil) != tt.wantErr {
+			t.Errorf("ParseCPU(%q) error = %v, wantErr = %v", tt.input, err, tt.wantErr)
+			continue
+		}
+		if got != tt.want {
+			t.Errorf("ParseCPU(%q) = %v, want %v", tt.input, got, tt.want)
+		}
+	}
+}
+
+type parseSizeK8sTest struct {
+	input string
+	want  int64
+}
+
+var parseSizeK8sTests = []parseSizeK8sTest{
+	{"1Ki", 1 << 10},
+	{"1Mi", 1 << 20},
+	{"1Gi", 1 << 30},
+	{"1Ti", 1 << 40},
+	{"50Mi", 50 << 20},
+	{"100Ki", 100 << 10},
+}
+
+func TestParseSizeKubernetesSuffixes(t *testing.T) {
+	for _, tt := range parseSizeK8sTests {
+		got, err := ParseSize(tt.input)
+		if err != nil {
+			t.Errorf("ParseSize(%q) unexpected error: %v", tt.input, err)
+			continue
+		}
+		if got != tt.want {
+			t.Errorf("ParseSize(%q) = %d, want %d", tt.input, got, tt.want)
+		}
+	}
+}
+
+type modeValidationTest struct {
+	mode    string
+	wantErr bool
+}
+
+var modeValidationTests = []modeValidationTest{
+	{"app", false},
+	{"sidecar", false},
+	{"", true},
+	{"invalid", true},
+	{"APP", true},
+	{"SIDECAR", true},
+}
+
+func TestValidateMode(t *testing.T) {
+	for _, tt := range modeValidationTests {
+		cfg := &Config{Port: 8080, LogLevel: "info", IODirName: "test", Mode: tt.mode}
+		err := cfg.Validate()
+		if (err != nil) != tt.wantErr {
+			t.Errorf("Validate() Mode=%q, error=%v, wantErr=%v", tt.mode, err, tt.wantErr)
+		}
+	}
+}
+
+func TestLoadSidecarConfig(t *testing.T) {
+	os.Setenv("HOTPOD_MODE", "sidecar")
+	os.Setenv("HOTPOD_SIDECAR_CPU_BASELINE", "200m")
+	os.Setenv("HOTPOD_SIDECAR_CPU_JITTER", "20m")
+	os.Setenv("HOTPOD_SIDECAR_MEMORY_BASELINE", "100Mi")
+	os.Setenv("HOTPOD_SIDECAR_REQUEST_OVERHEAD", "5m")
+	defer func() {
+		for _, key := range []string{
+			"HOTPOD_MODE", "HOTPOD_SIDECAR_CPU_BASELINE",
+			"HOTPOD_SIDECAR_CPU_JITTER", "HOTPOD_SIDECAR_MEMORY_BASELINE",
+			"HOTPOD_SIDECAR_REQUEST_OVERHEAD",
+		} {
+			os.Unsetenv(key)
+		}
+	}()
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+
+	if cfg.Mode != "sidecar" {
+		t.Errorf("Mode = %q, want \"sidecar\"", cfg.Mode)
+	}
+	if cfg.SidecarCPUBaseline != 200*time.Millisecond {
+		t.Errorf("SidecarCPUBaseline = %v, want 200ms", cfg.SidecarCPUBaseline)
+	}
+	if cfg.SidecarCPUJitter != 20*time.Millisecond {
+		t.Errorf("SidecarCPUJitter = %v, want 20ms", cfg.SidecarCPUJitter)
+	}
+	if cfg.SidecarMemoryBaseline != 100<<20 {
+		t.Errorf("SidecarMemoryBaseline = %d, want %d (100Mi)", cfg.SidecarMemoryBaseline, 100<<20)
+	}
+	if cfg.SidecarRequestOverhead != 5*time.Millisecond {
+		t.Errorf("SidecarRequestOverhead = %v, want 5ms", cfg.SidecarRequestOverhead)
+	}
+}
+
+func TestLoadSidecarDefaults(t *testing.T) {
+	os.Unsetenv("HOTPOD_MODE")
+	os.Unsetenv("HOTPOD_SIDECAR_CPU_BASELINE")
+	os.Unsetenv("HOTPOD_SIDECAR_CPU_JITTER")
+	os.Unsetenv("HOTPOD_SIDECAR_MEMORY_BASELINE")
+	os.Unsetenv("HOTPOD_SIDECAR_REQUEST_OVERHEAD")
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load() error = %v", err)
+	}
+
+	if cfg.Mode != "app" {
+		t.Errorf("Mode = %q, want \"app\"", cfg.Mode)
+	}
+	if cfg.SidecarCPUBaseline != 100*time.Millisecond {
+		t.Errorf("SidecarCPUBaseline = %v, want 100ms", cfg.SidecarCPUBaseline)
+	}
+	if cfg.SidecarCPUJitter != 10*time.Millisecond {
+		t.Errorf("SidecarCPUJitter = %v, want 10ms", cfg.SidecarCPUJitter)
+	}
+	if cfg.SidecarMemoryBaseline != 50<<20 {
+		t.Errorf("SidecarMemoryBaseline = %d, want %d (50Mi)", cfg.SidecarMemoryBaseline, 50<<20)
+	}
+	if cfg.SidecarRequestOverhead != 0 {
+		t.Errorf("SidecarRequestOverhead = %v, want 0", cfg.SidecarRequestOverhead)
+	}
+}
+
+func TestValidateSidecarCPUBaselineRange(t *testing.T) {
+	base := Config{Port: 8080, LogLevel: "info", IODirName: "test", Mode: "sidecar"}
+
+	// Valid: 0
+	base.SidecarCPUBaseline = 0
+	if err := base.Validate(); err != nil {
+		t.Errorf("Validate() baseline=0 should not error: %v", err)
+	}
+
+	// Valid: 1s
+	base.SidecarCPUBaseline = time.Second
+	if err := base.Validate(); err != nil {
+		t.Errorf("Validate() baseline=1s should not error: %v", err)
+	}
+
+	// Invalid: >1s
+	base.SidecarCPUBaseline = time.Second + time.Millisecond
+	if err := base.Validate(); err == nil {
+		t.Error("Validate() baseline>1s should error")
+	}
+
+	// Invalid: negative
+	base.SidecarCPUBaseline = -1
+	if err := base.Validate(); err == nil {
+		t.Error("Validate() baseline<0 should error")
 	}
 }

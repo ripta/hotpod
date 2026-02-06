@@ -53,22 +53,37 @@ type Config struct {
 	QueueMaxDepth int
 	// QueueDefaultWorkers is the default number of queue workers
 	QueueDefaultWorkers int
+	// Mode is the operating mode: "app" (default) or "sidecar"
+	Mode string
+	// SidecarCPUBaseline is the steady CPU burn per 1s cycle (default: 100ms = 100m)
+	SidecarCPUBaseline time.Duration
+	// SidecarCPUJitter is random CPU variance added each cycle (default: 10ms = 10m)
+	SidecarCPUJitter time.Duration
+	// SidecarMemoryBaseline is the steady memory allocation in bytes (default: 50MiB)
+	SidecarMemoryBaseline int64
+	// SidecarRequestOverhead is extra CPU burn per request (default: 0)
+	SidecarRequestOverhead time.Duration
 }
 
 // Load reads configuration from environment variables.
 func Load() (*Config, error) {
 	cfg := &Config{
-		Port:                8080,
-		LogLevel:            "info",
-		ShutdownTimeout:     30 * time.Second,
-		RequestTimeout:      5 * time.Minute,
-		MaxConcurrentOps:    100,
-		MaxCPUDuration:      60 * time.Second,
-		MaxMemorySize:       1 << 30, // 1GB
-		MaxIOSize:           1 << 30, // 1GB
-		IODirName:           "hotpod",
-		QueueMaxDepth:       10000,
-		QueueDefaultWorkers: 1,
+		Port:                   8080,
+		LogLevel:               "info",
+		ShutdownTimeout:        30 * time.Second,
+		RequestTimeout:         5 * time.Minute,
+		MaxConcurrentOps:       100,
+		MaxCPUDuration:         60 * time.Second,
+		MaxMemorySize:          1 << 30, // 1GB
+		MaxIOSize:              1 << 30, // 1GB
+		IODirName:              "hotpod",
+		QueueMaxDepth:          10000,
+		QueueDefaultWorkers:    1,
+		Mode:                   "app",
+		SidecarCPUBaseline:     100 * time.Millisecond,
+		SidecarCPUJitter:       10 * time.Millisecond,
+		SidecarMemoryBaseline:  50 << 20, // 50MiB
+		SidecarRequestOverhead: 0,
 	}
 
 	var err error
@@ -121,6 +136,19 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 	if cfg.QueueDefaultWorkers, err = getEnvInt("HOTPOD_QUEUE_DEFAULT_WORKERS", cfg.QueueDefaultWorkers); err != nil {
+		return nil, err
+	}
+	cfg.Mode = getEnvString("HOTPOD_MODE", cfg.Mode)
+	if cfg.SidecarCPUBaseline, err = getEnvCPU("HOTPOD_SIDECAR_CPU_BASELINE", cfg.SidecarCPUBaseline); err != nil {
+		return nil, err
+	}
+	if cfg.SidecarCPUJitter, err = getEnvCPU("HOTPOD_SIDECAR_CPU_JITTER", cfg.SidecarCPUJitter); err != nil {
+		return nil, err
+	}
+	if cfg.SidecarMemoryBaseline, err = getEnvSize("HOTPOD_SIDECAR_MEMORY_BASELINE", cfg.SidecarMemoryBaseline); err != nil {
+		return nil, err
+	}
+	if cfg.SidecarRequestOverhead, err = getEnvCPU("HOTPOD_SIDECAR_REQUEST_OVERHEAD", cfg.SidecarRequestOverhead); err != nil {
 		return nil, err
 	}
 
@@ -186,21 +214,69 @@ func getEnvSize(key string, defaultVal int64) (int64, error) {
 	return size, nil
 }
 
+func getEnvCPU(key string, defaultVal time.Duration) (time.Duration, error) {
+	v, ok := os.LookupEnv(key)
+	if !ok {
+		return defaultVal, nil
+	}
+	d, err := ParseCPU(v)
+	if err != nil {
+		return 0, fmt.Errorf("invalid %s: %w", key, err)
+	}
+	return d, nil
+}
+
+// ParseCPU converts Kubernetes CPU notation to a duration representing CPU burn
+// per second. Millicore notation (e.g. "100m" → 100ms) and decimal notation
+// (e.g. "0.5" → 500ms) are supported.
+func ParseCPU(s string) (time.Duration, error) {
+	if s == "" {
+		return 0, errors.New("empty CPU string")
+	}
+	s = strings.TrimSpace(s)
+
+	if strings.HasSuffix(s, "m") {
+		numStr := strings.TrimSuffix(s, "m")
+		n, err := strconv.ParseInt(numStr, 10, 64)
+		if err != nil {
+			return 0, fmt.Errorf("invalid millicore value: %w", err)
+		}
+		if n < 0 {
+			return 0, errors.New("CPU value cannot be negative")
+		}
+		return time.Duration(n) * time.Millisecond, nil
+	}
+
+	f, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		return 0, fmt.Errorf("invalid CPU value: %w", err)
+	}
+	if f < 0 {
+		return 0, errors.New("CPU value cannot be negative")
+	}
+	return time.Duration(f * float64(time.Second)), nil
+}
+
 type sizeSuffix struct {
 	suffix string
 	mult   int64
 }
 
 var sizeSuffixes = []sizeSuffix{
+	{"TI", 1 << 40},
 	{"TB", 1 << 40},
+	{"GI", 1 << 30},
 	{"GB", 1 << 30},
+	{"MI", 1 << 20},
 	{"MB", 1 << 20},
+	{"KI", 1 << 10},
 	{"KB", 1 << 10},
 	{"B", 1},
 }
 
 // ParseSize parses a human-readable size string (e.g., "100MB", "1GB") into bytes.
-// Supported suffixes: B, KB, MB, GB, TB (case-insensitive).
+// Supported suffixes: B, KB, MB, GB, TB and Kubernetes binary suffixes Ki, Mi, Gi, Ti
+// (case-insensitive). The Kubernetes suffixes use the same power-of-2 multipliers.
 func ParseSize(s string) (int64, error) {
 	if s == "" {
 		return 0, errors.New("empty size string")
@@ -288,6 +364,26 @@ func (c *Config) Validate() error {
 
 	if err := validateIODirName(c.IODirName); err != nil {
 		return err
+	}
+
+	if c.Mode != "app" && c.Mode != "sidecar" {
+		return fmt.Errorf("mode must be \"app\" or \"sidecar\", got %q", c.Mode)
+	}
+
+	if c.SidecarCPUBaseline < 0 || c.SidecarCPUBaseline > time.Second {
+		return fmt.Errorf("sidecar CPU baseline must be between 0 and 1s, got %s", c.SidecarCPUBaseline)
+	}
+
+	if c.SidecarCPUJitter < 0 {
+		return fmt.Errorf("sidecar CPU jitter must be non-negative, got %s", c.SidecarCPUJitter)
+	}
+
+	if c.SidecarMemoryBaseline < 0 {
+		return fmt.Errorf("sidecar memory baseline must be non-negative, got %d", c.SidecarMemoryBaseline)
+	}
+
+	if c.SidecarRequestOverhead < 0 {
+		return fmt.Errorf("sidecar request overhead must be non-negative, got %s", c.SidecarRequestOverhead)
 	}
 
 	return nil
