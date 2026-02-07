@@ -1,0 +1,31 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+
+patches:
+  - target:
+      kind: Deployment
+      name: hotpod
+    patch: |
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: hotpod
+      spec:
+        template:
+          spec:
+            containers:
+              - name: hotpod
+                env:
+                  - name: HOTPOD_STARTUP_DELAY
+                    value: "60s"
+                  - name: HOTPOD_STARTUP_JITTER
+                    value: "15s"
+                startupProbe:
+                  httpGet:
+                    path: /startupz
+                    port: http
+                  periodSeconds: 2
+                  failureThreshold: 40

@@ -17,7 +17,7 @@ docker-build: ## Build Docker image (hotpod:dev)
 	@docker build -t hotpod:dev .
 
 k8s-validate: ## Validate manifests (dry-run)
-	@kubectl apply --dry-run=client -f manifests/
+	@kubectl apply --dry-run=client -k manifests/base/
 
 quick: build lint ## build + lint
 pre-commit: build test lint ## build + test + lint

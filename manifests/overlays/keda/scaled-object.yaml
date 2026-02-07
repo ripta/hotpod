@@ -1,0 +1,16 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: hotpod
+spec:
+  scaleTargetRef:
+    name: hotpod
+  minReplicaCount: 2
+  maxReplicaCount: 10
+  triggers:
+    - type: prometheus
+      metadata:
+        serverAddress: http://prometheus.monitoring.svc:9090
+        metricName: hotpod_queue_depth
+        query: hotpod_queue_depth
+        threshold: "50"

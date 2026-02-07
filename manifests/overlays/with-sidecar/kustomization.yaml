@@ -1,0 +1,70 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+
+nameSuffix: -with-sidecar
+
+patches:
+  - target:
+      kind: Deployment
+      name: hotpod
+    patch: |
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: hotpod
+      spec:
+        template:
+          spec:
+            containers:
+              - name: hotpod
+                env:
+                  - name: HOTPOD_MODE
+                    value: "app"
+              - name: hotpod-sidecar
+                image: hotpod:dev
+                ports:
+                  - name: sidecar
+                    containerPort: 8081
+                    protocol: TCP
+                env:
+                  - name: HOTPOD_MODE
+                    value: "sidecar"
+                  - name: HOTPOD_PORT
+                    value: "8081"
+                  - name: HOTPOD_SIDECAR_CPU_BASELINE
+                    value: "100m"
+                  - name: HOTPOD_SIDECAR_CPU_JITTER
+                    value: "10m"
+                  - name: HOTPOD_SIDECAR_MEMORY_BASELINE
+                    value: "50Mi"
+                resources:
+                  requests:
+                    cpu: 100m
+                    memory: 64Mi
+                  limits:
+                    cpu: 200m
+                    memory: 128Mi
+                startupProbe:
+                  httpGet:
+                    path: /startupz
+                    port: 8081
+                  periodSeconds: 2
+                  failureThreshold: 15
+                livenessProbe:
+                  httpGet:
+                    path: /healthz
+                    port: 8081
+                  periodSeconds: 10
+                  failureThreshold: 3
+                readinessProbe:
+                  httpGet:
+                    path: /readyz
+                    port: 8081
+                  periodSeconds: 5
+                  failureThreshold: 3
+                securityContext:
+                  readOnlyRootFilesystem: true
+                  allowPrivilegeEscalation: false

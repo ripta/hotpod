@@ -1,0 +1,9 @@
+.dockerignore
+.git/
+.github/
+.idea/
+.vscode/
+*.md
+bin/
+Dockerfile
+manifests/
