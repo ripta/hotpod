@@ -1,0 +1,580 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100,
+      "title": "Requests",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "drawStyle": "line", "fillOpacity": 10, "spanNulls": false },
+          "unit": "reqps"
+        }
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 1 },
+      "id": 1,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
+      "targets": [
+        {
+          "expr": "sum by (endpoint) (rate(hotpod_requests_total{namespace=\"$namespace\"}[$interval]))",
+          "legendFormat": "{{ endpoint }}"
+        }
+      ],
+      "title": "Request Rate by Endpoint",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "drawStyle": "line", "fillOpacity": 10, "spanNulls": false },
+          "unit": "percentunit",
+          "max": 1
+        }
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 1 },
+      "id": 2,
+      "targets": [
+        {
+          "expr": "sum by (endpoint) (rate(hotpod_requests_total{namespace=\"$namespace\", status=~\"5..\"}[$interval])) / sum by (endpoint) (rate(hotpod_requests_total{namespace=\"$namespace\"}[$interval]))",
+          "legendFormat": "{{ endpoint }}"
+        }
+      ],
+      "title": "Error Rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "drawStyle": "line", "fillOpacity": 10, "spanNulls": false },
+          "unit": "s"
+        }
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 1 },
+      "id": 3,
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum by (le, endpoint) (rate(hotpod_request_duration_seconds_bucket{namespace=\"$namespace\"}[$interval])))",
+          "legendFormat": "p50 {{ endpoint }}"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum by (le, endpoint) (rate(hotpod_request_duration_seconds_bucket{namespace=\"$namespace\"}[$interval])))",
+          "legendFormat": "p95 {{ endpoint }}"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum by (le, endpoint) (rate(hotpod_request_duration_seconds_bucket{namespace=\"$namespace\"}[$interval])))",
+          "legendFormat": "p99 {{ endpoint }}"
+        }
+      ],
+      "title": "Request Duration p50/p95/p99",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "drawStyle": "line", "fillOpacity": 10, "spanNulls": false },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 1 },
+      "id": 4,
+      "targets": [
+        {
+          "expr": "hotpod_in_flight_requests{namespace=\"$namespace\"}",
+          "legendFormat": "{{ pod }}"
+        }
+      ],
+      "title": "In-Flight Requests",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 9 },
+      "id": 101,
+      "title": "Resources",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "drawStyle": "line", "fillOpacity": 10, "spanNulls": false },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 10 },
+      "id": 5,
+      "targets": [
+        {
+          "expr": "hotpod_active_cpu_operations{namespace=\"$namespace\"}",
+          "legendFormat": "{{ pod }}"
+        }
+      ],
+      "title": "Active CPU Operations",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "drawStyle": "line", "fillOpacity": 10, "spanNulls": false },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 10 },
+      "id": 6,
+      "targets": [
+        {
+          "expr": "rate(hotpod_cpu_seconds_total{namespace=\"$namespace\"}[$interval])",
+          "legendFormat": "{{ pod }}"
+        }
+      ],
+      "title": "CPU Seconds Rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "drawStyle": "line", "fillOpacity": 10, "spanNulls": false },
+          "unit": "bytes"
+        }
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 10 },
+      "id": 7,
+      "targets": [
+        {
+          "expr": "hotpod_memory_allocated_bytes{namespace=\"$namespace\"}",
+          "legendFormat": "{{ pod }}"
+        }
+      ],
+      "title": "Memory Allocated",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "drawStyle": "line", "fillOpacity": 10, "spanNulls": false },
+          "unit": "Bps"
+        }
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 10 },
+      "id": 8,
+      "targets": [
+        {
+          "expr": "sum by (operation) (rate(hotpod_io_bytes_total{namespace=\"$namespace\"}[$interval]))",
+          "legendFormat": "{{ operation }}"
+        }
+      ],
+      "title": "I/O Bytes Rate",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 18 },
+      "id": 102,
+      "title": "Queue",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "drawStyle": "line", "fillOpacity": 20, "spanNulls": false },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 19 },
+      "id": 9,
+      "targets": [
+        {
+          "expr": "hotpod_queue_depth{namespace=\"$namespace\"}",
+          "legendFormat": "total ({{ pod }})"
+        },
+        {
+          "expr": "hotpod_queue_depth_by_priority{namespace=\"$namespace\"}",
+          "legendFormat": "{{ priority }} ({{ pod }})"
+        }
+      ],
+      "title": "Queue Depth",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "drawStyle": "line", "fillOpacity": 10, "spanNulls": false },
+          "unit": "ops"
+        }
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 19 },
+      "id": 10,
+      "targets": [
+        {
+          "expr": "rate(hotpod_queue_items_processed_total{namespace=\"$namespace\"}[$interval])",
+          "legendFormat": "processed ({{ pod }})"
+        },
+        {
+          "expr": "rate(hotpod_queue_items_failed_total{namespace=\"$namespace\"}[$interval])",
+          "legendFormat": "failed ({{ pod }})"
+        }
+      ],
+      "title": "Processing Rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "drawStyle": "line", "fillOpacity": 10, "spanNulls": false },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 19 },
+      "id": 11,
+      "targets": [
+        {
+          "expr": "hotpod_queue_active_workers{namespace=\"$namespace\"}",
+          "legendFormat": "{{ pod }}"
+        }
+      ],
+      "title": "Active Workers",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "drawStyle": "line", "fillOpacity": 10, "spanNulls": false },
+          "unit": "s"
+        }
+      },
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 19 },
+      "id": 12,
+      "targets": [
+        {
+          "expr": "hotpod_queue_oldest_item_age_seconds{namespace=\"$namespace\"}",
+          "legendFormat": "{{ pod }}"
+        }
+      ],
+      "title": "Oldest Item Age",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 27 },
+      "id": 103,
+      "title": "Faults",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "max": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 0.1 },
+              { "color": "red", "value": 0.5 }
+            ]
+          }
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 28 },
+      "id": 13,
+      "targets": [
+        {
+          "expr": "hotpod_fault_error_rate{namespace=\"$namespace\"}",
+          "legendFormat": "{{ endpoint }}"
+        }
+      ],
+      "title": "Configured Error Rate",
+      "type": "gauge"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "drawStyle": "line", "fillOpacity": 10, "spanNulls": false },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 28 },
+      "id": 14,
+      "targets": [
+        {
+          "expr": "sum by (endpoint, status) (rate(hotpod_fault_errors_injected_total{namespace=\"$namespace\"}[$interval]))",
+          "legendFormat": "{{ endpoint }} ({{ status }})"
+        }
+      ],
+      "title": "Injected Errors Rate",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 36 },
+      "id": 104,
+      "title": "Scaling",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "drawStyle": "line", "fillOpacity": 10, "spanNulls": false },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 37 },
+      "id": 15,
+      "targets": [
+        {
+          "expr": "kube_horizontalpodautoscaler_status_desired_replicas{namespace=\"$namespace\", horizontalpodautoscaler=~\"hotpod.*\"}",
+          "legendFormat": "desired ({{ horizontalpodautoscaler }})"
+        },
+        {
+          "expr": "kube_horizontalpodautoscaler_status_current_replicas{namespace=\"$namespace\", horizontalpodautoscaler=~\"hotpod.*\"}",
+          "legendFormat": "current ({{ horizontalpodautoscaler }})"
+        }
+      ],
+      "title": "HPA Replicas",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "drawStyle": "line", "fillOpacity": 10, "spanNulls": false },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 37 },
+      "id": 16,
+      "targets": [
+        {
+          "expr": "count by (phase) (kube_pod_status_phase{namespace=\"$namespace\", pod=~\"hotpod.*\"} == 1)",
+          "legendFormat": "{{ phase }}"
+        }
+      ],
+      "title": "Pod Count by Phase",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "drawStyle": "bars", "fillOpacity": 50, "spanNulls": false },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 37 },
+      "id": 17,
+      "targets": [
+        {
+          "expr": "increase(kube_pod_container_status_restarts_total{namespace=\"$namespace\", pod=~\"hotpod.*\"}[$interval])",
+          "legendFormat": "{{ pod }} / {{ container }}"
+        }
+      ],
+      "title": "Pod Restarts",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 45 },
+      "id": 105,
+      "title": "Sidecar",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "drawStyle": "line", "fillOpacity": 10, "spanNulls": false },
+          "unit": "short"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 46 },
+      "id": 18,
+      "targets": [
+        {
+          "expr": "rate(hotpod_sidecar_cpu_burn_seconds_total{namespace=\"$namespace\"}[$interval])",
+          "legendFormat": "{{ pod }}"
+        }
+      ],
+      "title": "Sidecar CPU Burn Rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "drawStyle": "line", "fillOpacity": 10, "spanNulls": false },
+          "unit": "bytes"
+        }
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 46 },
+      "id": 19,
+      "targets": [
+        {
+          "expr": "hotpod_sidecar_memory_held_bytes{namespace=\"$namespace\"}",
+          "legendFormat": "{{ pod }}"
+        }
+      ],
+      "title": "Sidecar Memory Held",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 54 },
+      "id": 106,
+      "title": "Lifecycle",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "mappings": [
+            { "options": { "0": { "text": "Starting" }, "1": { "text": "Ready" } }, "type": "value" }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "yellow", "value": null },
+              { "color": "green", "value": 1 }
+            ]
+          }
+        }
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 55 },
+      "id": 20,
+      "targets": [
+        {
+          "expr": "hotpod_startup_complete{namespace=\"$namespace\"}",
+          "legendFormat": "{{ pod }}"
+        }
+      ],
+      "title": "Startup Complete",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "mappings": [
+            { "options": { "0": { "text": "Running" }, "1": { "text": "Shutting Down" } }, "type": "value" }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 1 }
+            ]
+          }
+        }
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 55 },
+      "id": 21,
+      "targets": [
+        {
+          "expr": "hotpod_shutdown_in_progress{namespace=\"$namespace\"}",
+          "legendFormat": "{{ pod }}"
+        }
+      ],
+      "title": "Shutdown In Progress",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "drawStyle": "line", "fillOpacity": 10, "spanNulls": false },
+          "unit": "s"
+        }
+      },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 55 },
+      "id": 22,
+      "targets": [
+        {
+          "expr": "hotpod_startup_duration_seconds{namespace=\"$namespace\"}",
+          "legendFormat": "{{ pod }}"
+        }
+      ],
+      "title": "Startup Duration",
+      "type": "timeseries"
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["hotpod", "k6", "scenarios"],
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "hide": 0,
+        "includeAll": false,
+        "label": "Datasource",
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "type": "datasource"
+      },
+      {
+        "current": {},
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(hotpod_requests_total, namespace)",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Namespace",
+        "multi": false,
+        "name": "namespace",
+        "query": "label_values(hotpod_requests_total, namespace)",
+        "refresh": 2,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": { "selected": false, "text": "1m", "value": "1m" },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Interval",
+        "multi": false,
+        "name": "interval",
+        "options": [
+          { "selected": false, "text": "30s", "value": "30s" },
+          { "selected": true, "text": "1m", "value": "1m" },
+          { "selected": false, "text": "5m", "value": "5m" },
+          { "selected": false, "text": "15m", "value": "15m" }
+        ],
+        "query": "30s,1m,5m,15m",
+        "type": "custom"
+      }
+    ]
+  },
+  "time": { "from": "now-30m", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Hotpod Scenarios",
+  "uid": "hotpod-scenarios",
+  "version": 1
+}
