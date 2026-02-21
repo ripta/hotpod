@@ -49,7 +49,16 @@ kubectl port-forward -n <namespace> svc/hotpod 8080:8080
 | `oom-pressure.js` | Escalating memory until OOM kill | memory limits set |
 | `hang-detection.js` | Trigger hang, verify liveness probe restart | liveness probe configured |
 
-## Running
+## In-Cluster Execution (k6 Operator)
+
+For running scenarios inside Kubernetes via the k6 operator, see [`k6-operator/`](k6-operator/). Pre-built TestRun and ConfigMap manifests are provided for all 10 scenarios:
+
+```bash
+make k6-configmaps
+kubectl apply -k scenarios/k6-operator/
+```
+
+## Running Locally
 
 ```bash
 # Run a single scenario

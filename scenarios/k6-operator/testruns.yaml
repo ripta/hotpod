@@ -1,0 +1,209 @@
+apiVersion: k6.io/v1alpha1
+kind: TestRun
+metadata:
+  name: hotpod-scaling-queue-backlog-burst
+spec:
+  parallelism: 1
+  script:
+    configMap:
+      name: k6-scaling-queue-backlog-burst
+      file: test.js
+  runner:
+    env:
+      - name: HOTPOD_BASE_URL
+        value: "http://hotpod.default.svc:80"
+      - name: HOTPOD_ADMIN_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: hotpod-admin-token
+            key: token
+            optional: true
+---
+apiVersion: k6.io/v1alpha1
+kind: TestRun
+metadata:
+  name: hotpod-scaling-slow-startup-load
+spec:
+  parallelism: 1
+  script:
+    configMap:
+      name: k6-scaling-slow-startup-load
+      file: test.js
+  runner:
+    env:
+      - name: HOTPOD_BASE_URL
+        value: "http://hotpod.default.svc:80"
+      - name: HOTPOD_ADMIN_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: hotpod-admin-token
+            key: token
+            optional: true
+---
+apiVersion: k6.io/v1alpha1
+kind: TestRun
+metadata:
+  name: hotpod-scaling-scale-down-inflight
+spec:
+  parallelism: 1
+  script:
+    configMap:
+      name: k6-scaling-scale-down-inflight
+      file: test.js
+  runner:
+    env:
+      - name: HOTPOD_BASE_URL
+        value: "http://hotpod.default.svc:80"
+      - name: HOTPOD_ADMIN_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: hotpod-admin-token
+            key: token
+            optional: true
+---
+apiVersion: k6.io/v1alpha1
+kind: TestRun
+metadata:
+  name: hotpod-scaling-resource-vs-container-hpa
+spec:
+  parallelism: 1
+  script:
+    configMap:
+      name: k6-scaling-resource-vs-container-hpa
+      file: test.js
+  runner:
+    env:
+      - name: HOTPOD_BASE_URL
+        value: "http://hotpod.default.svc:80"
+      - name: HOTPOD_ADMIN_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: hotpod-admin-token
+            key: token
+            optional: true
+---
+apiVersion: k6.io/v1alpha1
+kind: TestRun
+metadata:
+  name: hotpod-resilience-error-rate-ramp
+spec:
+  parallelism: 1
+  script:
+    configMap:
+      name: k6-resilience-error-rate-ramp
+      file: test.js
+  runner:
+    env:
+      - name: HOTPOD_BASE_URL
+        value: "http://hotpod.default.svc:80"
+      - name: HOTPOD_ADMIN_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: hotpod-admin-token
+            key: token
+            optional: true
+---
+apiVersion: k6.io/v1alpha1
+kind: TestRun
+metadata:
+  name: hotpod-resilience-partial-failures
+spec:
+  parallelism: 1
+  script:
+    configMap:
+      name: k6-resilience-partial-failures
+      file: test.js
+  runner:
+    env:
+      - name: HOTPOD_BASE_URL
+        value: "http://hotpod.default.svc:80"
+      - name: HOTPOD_ADMIN_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: hotpod-admin-token
+            key: token
+            optional: true
+---
+apiVersion: k6.io/v1alpha1
+kind: TestRun
+metadata:
+  name: hotpod-resilience-recovery-timing
+spec:
+  parallelism: 1
+  script:
+    configMap:
+      name: k6-resilience-recovery-timing
+      file: test.js
+  runner:
+    env:
+      - name: HOTPOD_BASE_URL
+        value: "http://hotpod.default.svc:80"
+      - name: HOTPOD_ADMIN_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: hotpod-admin-token
+            key: token
+            optional: true
+---
+apiVersion: k6.io/v1alpha1
+kind: TestRun
+metadata:
+  name: hotpod-chaos-crash-during-load
+spec:
+  parallelism: 1
+  script:
+    configMap:
+      name: k6-chaos-crash-during-load
+      file: test.js
+  runner:
+    env:
+      - name: HOTPOD_BASE_URL
+        value: "http://hotpod.default.svc:80"
+      - name: HOTPOD_ADMIN_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: hotpod-admin-token
+            key: token
+            optional: true
+---
+apiVersion: k6.io/v1alpha1
+kind: TestRun
+metadata:
+  name: hotpod-chaos-oom-pressure
+spec:
+  parallelism: 1
+  script:
+    configMap:
+      name: k6-chaos-oom-pressure
+      file: test.js
+  runner:
+    env:
+      - name: HOTPOD_BASE_URL
+        value: "http://hotpod.default.svc:80"
+      - name: HOTPOD_ADMIN_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: hotpod-admin-token
+            key: token
+            optional: true
+---
+apiVersion: k6.io/v1alpha1
+kind: TestRun
+metadata:
+  name: hotpod-chaos-hang-detection
+spec:
+  parallelism: 1
+  script:
+    configMap:
+      name: k6-chaos-hang-detection
+      file: test.js
+  runner:
+    env:
+      - name: HOTPOD_BASE_URL
+        value: "http://hotpod.default.svc:80"
+      - name: HOTPOD_ADMIN_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: hotpod-admin-token
+            key: token
+            optional: true

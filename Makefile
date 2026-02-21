@@ -1,4 +1,4 @@
-.PHONY: build test lint docker-build k8s-validate quick pre-commit all help
+.PHONY: build test lint docker-build k8s-validate k6-configmaps quick pre-commit all help
 .DEFAULT_GOAL := help
 
 VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
@@ -19,9 +19,12 @@ docker-build: ## Build Docker image (hotpod:dev)
 k8s-validate: ## Validate manifests (dry-run)
 	@kubectl apply --dry-run=client -k manifests/base/
 
+k6-configmaps: ## Generate k6 operator ConfigMaps from scenario scripts
+	@scenarios/k6-operator/build-configmaps.sh > scenarios/k6-operator/configmaps.yaml
+
 quick: build lint ## build + lint
 pre-commit: build test lint ## build + test + lint
 all: build test lint docker-build k8s-validate ## Run all targets
 
 help: ## Show this help
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-15s %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-17s %s\n", $$1, $$2}'

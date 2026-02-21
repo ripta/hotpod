@@ -1,3 +1,4 @@
 /.cache
 /.idea
 /bin/hotpod
+/scenarios/k6-operator/configmaps.yaml
