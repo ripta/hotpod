@@ -16,9 +16,14 @@ spec:
     spec:
       enableServiceLinks: false
       terminationGracePeriodSeconds: 35
+      automountServiceAccountToken: false
       securityContext:
         runAsNonRoot: true
         runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: hotpod
           image: hotpod:dev
@@ -59,9 +64,12 @@ spec:
           securityContext:
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
           volumeMounts:
             - name: tmp
               mountPath: /tmp/hotpod
       volumes:
         - name: tmp
-          emptyDir: {}
+          emptyDir:
+            sizeLimit: 512Mi
