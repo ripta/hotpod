@@ -12,6 +12,7 @@ spec:
       labels:
         app.kubernetes.io/name: hotpod
     spec:
+      enableServiceLinks: false
       terminationGracePeriodSeconds: 35
       securityContext:
         runAsNonRoot: true
