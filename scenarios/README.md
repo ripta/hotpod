@@ -24,6 +24,8 @@ kubectl port-forward -n <namespace> svc/hotpod 8080:8080
 
 ## Scenarios
 
+15 scenario tests organized across 5 categories:
+
 ### Scaling (`scripts/scaling/`)
 
 | Script | Description | Overlay |
@@ -49,9 +51,24 @@ kubectl port-forward -n <namespace> svc/hotpod 8080:8080
 | `oom-pressure.js` | Escalating memory until OOM kill | memory limits set |
 | `hang-detection.js` | Trigger hang, verify liveness probe restart | liveness probe configured |
 
+### Capacity (`scripts/capacity/`)
+
+| Script | Description |
+|--------|-------------|
+| `io-throughput.js` | Ramp I/O across size tiers (1MB, 10MB, 50MB) with write/read/mixed ops |
+| `concurrent-saturation.js` | Flood past MAX_CONCURRENT_OPS, validate 429 rate limiting |
+| `mixed-workload.js` | 4 parallel groups hitting /cpu, /memory, /io, /work simultaneously |
+
+### Lifecycle (`scripts/lifecycle/`)
+
+| Script | Description | Requirements |
+|--------|-------------|--------------|
+| `readiness-toggle.js` | Toggle readiness under active traffic, verify probe and request behavior | |
+| `drain-shutdown.js` | Trigger graceful shutdown with in-flight requests | 2+ replicas |
+
 ## In-Cluster Execution (k6 Operator)
 
-For running scenarios inside Kubernetes via the k6 operator, see [`k6-operator/`](k6-operator/). Pre-built TestRun and ConfigMap manifests are provided for all 10 scenarios:
+For running scenarios inside Kubernetes via the k6 operator, see [`k6-operator/`](k6-operator/). Pre-built TestRun and ConfigMap manifests are provided for all 15 scenarios:
 
 ```bash
 make k6-configmaps
@@ -85,7 +102,8 @@ k6 inspect scenarios/scripts/scaling/queue-backlog-burst.js
 | `manifests/overlays/hpa-cpu` | `resource-vs-container-hpa.js` |
 | `manifests/overlays/with-sidecar` | `resource-vs-container-hpa.js` |
 | Any HPA overlay | `scale-down-inflight.js` |
-| Base (2+ replicas) | `crash-during-load.js`, `hang-detection.js` |
+| Base (2+ replicas) | `crash-during-load.js`, `hang-detection.js`, `drain-shutdown.js` |
+| Base | `io-throughput.js`, `concurrent-saturation.js`, `mixed-workload.js`, `readiness-toggle.js` |
 
 ## Reset
 

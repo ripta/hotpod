@@ -24,7 +24,7 @@ fi
 
 first=true
 
-for script in "${SCRIPTS_DIR}"/{scaling,resilience,chaos}/*.js; do
+for script in "${SCRIPTS_DIR}"/{scaling,resilience,chaos,capacity,lifecycle}/*.js; do
   [[ -f "${script}" ]] || continue
 
   # Derive category and name from the path:

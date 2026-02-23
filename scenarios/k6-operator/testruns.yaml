@@ -207,3 +207,108 @@ spec:
             name: hotpod-admin-token
             key: token
             optional: true
+---
+apiVersion: k6.io/v1alpha1
+kind: TestRun
+metadata:
+  name: hotpod-capacity-io-throughput
+spec:
+  parallelism: 1
+  script:
+    configMap:
+      name: k6-capacity-io-throughput
+      file: test.js
+  runner:
+    env:
+      - name: HOTPOD_BASE_URL
+        value: "http://hotpod.default.svc:80"
+      - name: HOTPOD_ADMIN_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: hotpod-admin-token
+            key: token
+            optional: true
+---
+apiVersion: k6.io/v1alpha1
+kind: TestRun
+metadata:
+  name: hotpod-capacity-concurrent-saturation
+spec:
+  parallelism: 1
+  script:
+    configMap:
+      name: k6-capacity-concurrent-saturation
+      file: test.js
+  runner:
+    env:
+      - name: HOTPOD_BASE_URL
+        value: "http://hotpod.default.svc:80"
+      - name: HOTPOD_ADMIN_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: hotpod-admin-token
+            key: token
+            optional: true
+---
+apiVersion: k6.io/v1alpha1
+kind: TestRun
+metadata:
+  name: hotpod-capacity-mixed-workload
+spec:
+  parallelism: 1
+  script:
+    configMap:
+      name: k6-capacity-mixed-workload
+      file: test.js
+  runner:
+    env:
+      - name: HOTPOD_BASE_URL
+        value: "http://hotpod.default.svc:80"
+      - name: HOTPOD_ADMIN_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: hotpod-admin-token
+            key: token
+            optional: true
+---
+apiVersion: k6.io/v1alpha1
+kind: TestRun
+metadata:
+  name: hotpod-lifecycle-readiness-toggle
+spec:
+  parallelism: 1
+  script:
+    configMap:
+      name: k6-lifecycle-readiness-toggle
+      file: test.js
+  runner:
+    env:
+      - name: HOTPOD_BASE_URL
+        value: "http://hotpod.default.svc:80"
+      - name: HOTPOD_ADMIN_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: hotpod-admin-token
+            key: token
+            optional: true
+---
+apiVersion: k6.io/v1alpha1
+kind: TestRun
+metadata:
+  name: hotpod-lifecycle-drain-shutdown
+spec:
+  parallelism: 1
+  script:
+    configMap:
+      name: k6-lifecycle-drain-shutdown
+      file: test.js
+  runner:
+    env:
+      - name: HOTPOD_BASE_URL
+        value: "http://hotpod.default.svc:80"
+      - name: HOTPOD_ADMIN_TOKEN
+        valueFrom:
+          secretKeyRef:
+            name: hotpod-admin-token
+            key: token
+            optional: true
