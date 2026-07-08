@@ -1,0 +1,150 @@
+goos: darwin
+goarch: arm64
+pkg: github.com/ripta/hotpod/internal/handlers
+cpu: Apple M3 Pro
+BenchmarkBurnCPUProfileOverhead/intensity=low/cores=1/pprof=off-11         	      22	  50018110 ns/op	    379785 iters/op	   7592953 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=low/cores=1/pprof=off-11         	      22	  50013254 ns/op	    375273 iters/op	   7503480 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=low/cores=1/pprof=off-11         	      22	  50014460 ns/op	    374809 iters/op	   7494015 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=low/cores=1/pprof=off-11         	      22	  50015886 ns/op	    379651 iters/op	   7590608 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=low/cores=1/pprof=off-11         	      22	  50014197 ns/op	    376850 iters/op	   7534867 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=low/cores=1/pprof=off-11         	      22	  50012396 ns/op	    376895 iters/op	   7536037 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=low/cores=1/pprof=on-11          	      22	  50011330 ns/op	    364164 iters/op	   7281639 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=low/cores=1/pprof=on-11          	      22	  50011814 ns/op	    363258 iters/op	   7263452 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=low/cores=1/pprof=on-11          	      22	  50015148 ns/op	    360817 iters/op	   7214158 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=low/cores=1/pprof=on-11          	      22	  50046691 ns/op	    340696 iters/op	   6807561 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=low/cores=1/pprof=on-11          	      22	  50017028 ns/op	    359523 iters/op	   7188011 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=low/cores=1/pprof=on-11          	      22	  50015532 ns/op	    364725 iters/op	   7292243 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=low/cores=4/pprof=off-11         	      22	  50032877 ns/op	    266487 iters/op	   5326231 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=low/cores=4/pprof=off-11         	      22	  50057360 ns/op	    264299 iters/op	   5279926 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=low/cores=4/pprof=off-11         	      22	  50037744 ns/op	    263363 iters/op	   5263282 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=low/cores=4/pprof=off-11         	      22	  50038032 ns/op	    267329 iters/op	   5342519 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=low/cores=4/pprof=off-11         	      22	  50042562 ns/op	    268843 iters/op	   5372290 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=low/cores=4/pprof=off-11         	      22	  50037100 ns/op	    270248 iters/op	   5400949 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=low/cores=4/pprof=on-11          	      22	  50038964 ns/op	    265394 iters/op	   5303748 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=low/cores=4/pprof=on-11          	      22	  50034170 ns/op	    269426 iters/op	   5384838 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=low/cores=4/pprof=on-11          	      22	  50043746 ns/op	    270394 iters/op	   5403147 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=low/cores=4/pprof=on-11          	      22	  50036536 ns/op	    268192 iters/op	   5359933 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=low/cores=4/pprof=on-11          	      22	  50047006 ns/op	    267728 iters/op	   5349522 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=low/cores=4/pprof=on-11          	      22	  50032496 ns/op	    268888 iters/op	   5374257 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=medium/cores=1/pprof=off-11      	      22	  50508062 ns/op	      1916 iters/op	     37938 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=medium/cores=1/pprof=off-11      	      22	  50504786 ns/op	      1935 iters/op	     38322 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=medium/cores=1/pprof=off-11      	      22	  50648451 ns/op	      1917 iters/op	     37846 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=medium/cores=1/pprof=off-11      	      22	  50713911 ns/op	      1921 iters/op	     37888 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=medium/cores=1/pprof=off-11      	      22	  50582366 ns/op	      1929 iters/op	     38130 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=medium/cores=1/pprof=off-11      	      22	  50621098 ns/op	      1927 iters/op	     38066 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=medium/cores=1/pprof=on-11       	      22	  50404292 ns/op	      1922 iters/op	     38132 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=medium/cores=1/pprof=on-11       	      22	  50489841 ns/op	      1894 iters/op	     37522 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=medium/cores=1/pprof=on-11       	      22	  50498708 ns/op	      1924 iters/op	     38104 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=medium/cores=1/pprof=on-11       	      22	  50437657 ns/op	      1933 iters/op	     38326 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=medium/cores=1/pprof=on-11       	      22	  50554835 ns/op	      1907 iters/op	     37729 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=medium/cores=1/pprof=on-11       	      22	  50432591 ns/op	      1915 iters/op	     37980 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=medium/cores=4/pprof=off-11      	      22	  50477549 ns/op	      7677 iters/op	    152083 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=medium/cores=4/pprof=off-11      	      22	  50659417 ns/op	      7716 iters/op	    152319 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=medium/cores=4/pprof=off-11      	      22	  50742347 ns/op	      7688 iters/op	    151502 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=medium/cores=4/pprof=off-11      	      22	  50710070 ns/op	      7643 iters/op	    150712 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=medium/cores=4/pprof=off-11      	      22	  50696324 ns/op	      7550 iters/op	    148922 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=medium/cores=4/pprof=off-11      	      22	  50877256 ns/op	      7581 iters/op	    149001 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=medium/cores=4/pprof=on-11       	      22	  50568466 ns/op	      7442 iters/op	    147174 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=medium/cores=4/pprof=on-11       	      22	  50529125 ns/op	      6212 iters/op	    122929 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=medium/cores=4/pprof=on-11       	      22	  50398350 ns/op	      7167 iters/op	    142203 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=medium/cores=4/pprof=on-11       	      22	  50510619 ns/op	      7587 iters/op	    150208 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=medium/cores=4/pprof=on-11       	      22	  50583227 ns/op	      7422 iters/op	    146734 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=medium/cores=4/pprof=on-11       	      22	  50547826 ns/op	      7369 iters/op	    145788 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=high/cores=1/pprof=off-11        	      22	  50819869 ns/op	    123851 iters/op	   2437065 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=high/cores=1/pprof=off-11        	      22	  50940996 ns/op	    123539 iters/op	   2425137 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=high/cores=1/pprof=off-11        	      22	  50907665 ns/op	    122681 iters/op	   2409864 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=high/cores=1/pprof=off-11        	      22	  50891023 ns/op	    123807 iters/op	   2432789 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=high/cores=1/pprof=off-11        	      22	  50923790 ns/op	    126985 iters/op	   2493631 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=high/cores=1/pprof=off-11        	      22	  50751466 ns/op	    126298 iters/op	   2488549 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=high/cores=1/pprof=on-11         	      22	  50521494 ns/op	    123067 iters/op	   2435929 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=high/cores=1/pprof=on-11         	      22	  50558311 ns/op	    121292 iters/op	   2399050 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=high/cores=1/pprof=on-11         	      22	  50531390 ns/op	    124386 iters/op	   2461564 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=high/cores=1/pprof=on-11         	      22	  50549165 ns/op	    128296 iters/op	   2538052 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=high/cores=1/pprof=on-11         	      22	  50555144 ns/op	    113134 iters/op	   2237826 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=high/cores=1/pprof=on-11         	      22	  50567246 ns/op	    123481 iters/op	   2441918 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=high/cores=4/pprof=off-11        	      22	  50964017 ns/op	    472243 iters/op	   9266196 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=high/cores=4/pprof=off-11        	      22	  50913652 ns/op	    481568 iters/op	   9458516 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=high/cores=4/pprof=off-11        	      22	  50966273 ns/op	    480204 iters/op	   9422005 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=high/cores=4/pprof=off-11        	      22	  50784174 ns/op	    473129 iters/op	   9316462 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=high/cores=4/pprof=off-11        	      22	  50959225 ns/op	    480438 iters/op	   9427891 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=high/cores=4/pprof=off-11        	      22	  50873896 ns/op	    484764 iters/op	   9528737 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=high/cores=4/pprof=on-11         	      22	  50811396 ns/op	    472521 iters/op	   9299499 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=high/cores=4/pprof=on-11         	      22	  50651438 ns/op	    433464 iters/op	   8557777 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=high/cores=4/pprof=on-11         	      22	  50527945 ns/op	    469953 iters/op	   9300862 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=high/cores=4/pprof=on-11         	      22	  50653752 ns/op	    467664 iters/op	   9232573 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=high/cores=4/pprof=on-11         	      22	  50528547 ns/op	    477592 iters/op	   9451925 iters/s
+BenchmarkBurnCPUProfileOverhead/intensity=high/cores=4/pprof=on-11         	      22	  50578947 ns/op	    477559 iters/op	   9441861 iters/s
+BenchmarkAllocFillProfileOverhead/size=1.0KB/memprofile=off-11             	 3186435	       352.9 ns/op	2901.27 MB/s	    1024 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=1.0KB/memprofile=off-11             	 3393140	       357.4 ns/op	2864.88 MB/s	    1024 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=1.0KB/memprofile=off-11             	 3385468	       359.3 ns/op	2849.94 MB/s	    1024 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=1.0KB/memprofile=off-11             	 3347710	       351.3 ns/op	2914.71 MB/s	    1024 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=1.0KB/memprofile=off-11             	 3410751	       351.7 ns/op	2911.53 MB/s	    1024 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=1.0KB/memprofile=off-11             	 3420210	       356.3 ns/op	2873.83 MB/s	    1024 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=1.0KB/memprofile=default-11         	 3390612	       351.8 ns/op	2910.74 MB/s	    1024 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=1.0KB/memprofile=default-11         	 3432261	       352.7 ns/op	2903.15 MB/s	    1024 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=1.0KB/memprofile=default-11         	 3436596	       355.1 ns/op	2883.47 MB/s	    1024 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=1.0KB/memprofile=default-11         	 3364150	       353.9 ns/op	2893.28 MB/s	    1024 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=1.0KB/memprofile=default-11         	 3419793	       351.9 ns/op	2909.84 MB/s	    1024 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=1.0KB/memprofile=default-11         	 3384157	       351.7 ns/op	2911.47 MB/s	    1024 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=1.0KB/memprofile=all-11             	 1263553	       938.1 ns/op	1091.56 MB/s	    1024 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=1.0KB/memprofile=all-11             	 1283032	       936.3 ns/op	1093.65 MB/s	    1024 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=1.0KB/memprofile=all-11             	 1243140	      1092 ns/op	 937.76 MB/s	    1024 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=1.0KB/memprofile=all-11             	 1252674	       940.4 ns/op	1088.90 MB/s	    1024 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=1.0KB/memprofile=all-11             	 1279456	       968.3 ns/op	1057.50 MB/s	    1024 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=1.0KB/memprofile=all-11             	 1262479	       935.5 ns/op	1094.60 MB/s	    1024 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=64.0KB/memprofile=off-11            	   60793	     19714 ns/op	3324.33 MB/s	   65536 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=64.0KB/memprofile=off-11            	   60763	     19757 ns/op	3317.14 MB/s	   65536 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=64.0KB/memprofile=off-11            	   61102	     19967 ns/op	3282.22 MB/s	   65536 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=64.0KB/memprofile=off-11            	   61090	     19704 ns/op	3326.07 MB/s	   65536 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=64.0KB/memprofile=off-11            	   60982	     19759 ns/op	3316.74 MB/s	   65536 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=64.0KB/memprofile=off-11            	   60889	     19864 ns/op	3299.15 MB/s	   65536 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=64.0KB/memprofile=default-11        	   59289	     19808 ns/op	3308.63 MB/s	   65536 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=64.0KB/memprofile=default-11        	   60552	     19736 ns/op	3320.56 MB/s	   65536 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=64.0KB/memprofile=default-11        	   61225	     19782 ns/op	3312.97 MB/s	   65536 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=64.0KB/memprofile=default-11        	   61210	     19954 ns/op	3284.41 MB/s	   65536 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=64.0KB/memprofile=default-11        	   60830	     19827 ns/op	3305.35 MB/s	   65536 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=64.0KB/memprofile=default-11        	   60914	     19633 ns/op	3338.06 MB/s	   65536 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=64.0KB/memprofile=all-11            	   59682	     20072 ns/op	3265.02 MB/s	   65536 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=64.0KB/memprofile=all-11            	   59724	     20416 ns/op	3210.01 MB/s	   65536 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=64.0KB/memprofile=all-11            	   59870	     20039 ns/op	3270.43 MB/s	   65536 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=64.0KB/memprofile=all-11            	   60574	     20122 ns/op	3257.01 MB/s	   65536 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=64.0KB/memprofile=all-11            	   59896	     20134 ns/op	3254.94 MB/s	   65536 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=64.0KB/memprofile=all-11            	   56152	     20082 ns/op	3263.49 MB/s	   65536 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=1.0MB/memprofile=off-11             	    3920	    309741 ns/op	3385.33 MB/s	 1048579 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=1.0MB/memprofile=off-11             	    3837	    308801 ns/op	3395.63 MB/s	 1048578 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=1.0MB/memprofile=off-11             	    3824	    310859 ns/op	3373.16 MB/s	 1048578 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=1.0MB/memprofile=off-11             	    3862	    313446 ns/op	3345.31 MB/s	 1048579 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=1.0MB/memprofile=off-11             	    3739	    308976 ns/op	3393.71 MB/s	 1048579 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=1.0MB/memprofile=off-11             	    3936	    309381 ns/op	3389.27 MB/s	 1048578 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=1.0MB/memprofile=default-11         	    3825	    309990 ns/op	3382.61 MB/s	 1048578 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=1.0MB/memprofile=default-11         	    3846	    314241 ns/op	3336.85 MB/s	 1048578 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=1.0MB/memprofile=default-11         	    3876	    310990 ns/op	3371.74 MB/s	 1048579 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=1.0MB/memprofile=default-11         	    3932	    309364 ns/op	3389.46 MB/s	 1048579 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=1.0MB/memprofile=default-11         	    3812	    309600 ns/op	3386.87 MB/s	 1048579 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=1.0MB/memprofile=default-11         	    3771	    317294 ns/op	3304.75 MB/s	 1048579 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=1.0MB/memprofile=all-11             	    3542	    314921 ns/op	3329.64 MB/s	 1048579 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=1.0MB/memprofile=all-11             	    3903	    309147 ns/op	3391.83 MB/s	 1048578 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=1.0MB/memprofile=all-11             	    3970	    317127 ns/op	3306.48 MB/s	 1048579 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=1.0MB/memprofile=all-11             	    3783	    329588 ns/op	3181.47 MB/s	 1048578 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=1.0MB/memprofile=all-11             	    3721	    326231 ns/op	3214.22 MB/s	 1048579 B/op	       1 allocs/op
+BenchmarkAllocFillProfileOverhead/size=1.0MB/memprofile=all-11             	    3722	    335424 ns/op	3126.12 MB/s	 1048579 B/op	       1 allocs/op
+PASS
+ok  	github.com/ripta/hotpod/internal/handlers	173.574s
+goos: darwin
+goarch: arm64
+pkg: github.com/ripta/hotpod/internal/queue
+cpu: Apple M3 Pro
+BenchmarkQueueContentionProfileOverhead/profile=off-11         	 4125302	       284.7 ns/op	   3512244 ops/s
+BenchmarkQueueContentionProfileOverhead/profile=off-11         	 4292680	       284.0 ns/op	   3520725 ops/s
+BenchmarkQueueContentionProfileOverhead/profile=off-11         	 4316611	       285.4 ns/op	   3504270 ops/s
+BenchmarkQueueContentionProfileOverhead/profile=off-11         	 4179454	       286.9 ns/op	   3486103 ops/s
+BenchmarkQueueContentionProfileOverhead/profile=off-11         	 4167078	       285.2 ns/op	   3505992 ops/s
+BenchmarkQueueContentionProfileOverhead/profile=off-11         	 3971547	       285.1 ns/op	   3507017 ops/s
+BenchmarkQueueContentionProfileOverhead/profile=on-11          	 2837119	       427.8 ns/op	   2337340 ops/s
+BenchmarkQueueContentionProfileOverhead/profile=on-11          	 2840952	       449.2 ns/op	   2226223 ops/s
+BenchmarkQueueContentionProfileOverhead/profile=on-11          	 2336036	       489.1 ns/op	   2044647 ops/s
+BenchmarkQueueContentionProfileOverhead/profile=on-11          	 2703480	       423.8 ns/op	   2359538 ops/s
+BenchmarkQueueContentionProfileOverhead/profile=on-11          	 3014316	       417.8 ns/op	   2393364 ops/s
+BenchmarkQueueContentionProfileOverhead/profile=on-11          	 2826112	       419.3 ns/op	   2384913 ops/s
+PASS
+ok  	github.com/ripta/hotpod/internal/queue	19.492s
