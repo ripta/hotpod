@@ -1,8 +1,14 @@
-.PHONY: build test lint docker-build k8s-validate k6-configmaps quick pre-commit all help
+.PHONY: build test lint bench docker-build k8s-validate k6-configmaps quick pre-commit all help
 .DEFAULT_GOAL := help
 
 VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 LDFLAGS := -X main.version=$(VERSION)
+
+# pprof-overhead benchmark knobs (override on the command line, e.g.
+# `make bench BENCH_COUNT=10 BENCH_OUT=/tmp/bench.txt`).
+BENCH_TIME  ?= 1s
+BENCH_COUNT ?= 6
+BENCH_OUT   ?= benchmarks/pprof-overhead.txt
 
 build: ## Build binary to bin/hotpod
 	@go build -ldflags "$(LDFLAGS)" -o bin/hotpod ./cmd/hotpod
@@ -12,6 +18,11 @@ test: ## Run tests with coverage
 
 lint: ## Run go vet
 	@go vet ./...
+
+bench: ## Measure pprof overhead (CPU + queue); writes results to $(BENCH_OUT)
+	@mkdir -p $(dir $(BENCH_OUT))
+	@go test -run '^$$' -bench 'ProfileOverhead' -benchtime=$(BENCH_TIME) -count=$(BENCH_COUNT) \
+		./internal/handlers/ ./internal/queue/ | tee $(BENCH_OUT)
 
 docker-build: ## Build Docker image (hotpod:dev)
 	@docker build -t hotpod:dev .
